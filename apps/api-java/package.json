@@ -3,13 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "./mvnw clean package -DskipTests",
-    "dev": "./mvnw spring-boot:run",
-    "start": "java $JAVA_OPTS -jar target/api-java-1.0.0.jar",
-    "test": "./mvnw test",
-    "test:full": "./mvnw clean verify",
+    "build": "run-script-os",
+    "build:win32": "mvnw.cmd clean package -DskipTests",
+    "build:darwin:linux": "./mvnw clean package -DskipTests",
+    "dev": "run-script-os",
+    "dev:win32": "mvnw.cmd spring-boot:run",
+    "dev:darwin:linux": "./mvnw spring-boot:run",
+    "start": "java -jar target/api-java-1.0.0.jar",
+    "test": "run-script-os",
+    "test:win32": "mvnw.cmd test",
+    "test:darwin:linux": "./mvnw test",
+    "test:full": "run-script-os",
+    "test:full:win32": "mvnw.cmd clean verify",
+    "test:full:darwin:linux": "./mvnw clean verify",
     "docker:build": "docker build -t tickets-api-java:local .",
     "lint": "echo 'Java linting with checkstyle/spotless not configured yet'",
     "check-types": "echo 'Java type checking done during compile'"
+  },
+  "devDependencies": {
+    "run-script-os": "^1.1.6"
   }
 }

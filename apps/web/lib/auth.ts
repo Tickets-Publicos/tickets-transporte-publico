@@ -1,72 +1,62 @@
-export interface User {
-  id: number
-  name: string
-  email: string
-  created_at: string
-}
+// tickets-transporte-publico/apps/web/lib/auth.ts
+import { usersApi } from "./api/users";
+import type { User } from "./api/types";
 
-// Mock user storage (in a real app, this would be in a database)
-const users: User[] = [
-  { id: 1, name: "Maria Silva", email: "maria.silva@email.com", created_at: "2024-01-01T00:00:00Z" },
-  { id: 2, name: "João Santos", email: "joao.santos@email.com", created_at: "2024-01-01T00:00:00Z" },
-  { id: 3, name: "Ana Costa", email: "ana.costa@email.com", created_at: "2024-01-01T00:00:00Z" },
-]
+const STORAGE_KEY = "current_user";
 
-let currentUser: User | null = null
+export type { User };
 
 export function getCurrentUser(): User | null {
-  return currentUser
-}
+  if (typeof window === "undefined") return null;
 
-export function isAuthenticated(): boolean {
-  return currentUser !== null
-}
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
 
-export async function signIn(email: string, name: string): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
-    // Check if user exists
-    let user = users.find((u) => u.email === email)
-
-    if (!user) {
-      // Create new user
-      user = {
-        id: users.length + 1,
-        name,
-        email,
-        created_at: new Date().toISOString(),
-      }
-      users.push(user)
-    }
-
-    currentUser = user
-
-    // Store in localStorage for persistence
-    if (typeof window !== "undefined") {
-      localStorage.setItem("currentUser", JSON.stringify(user))
-    }
-
-    return { success: true, user }
-  } catch (error) {
-    return { success: false, error: "Erro ao fazer login" }
+    return JSON.parse(stored) as User;
+  } catch {
+    return null;
   }
 }
 
-export function signOut(): void {
-  currentUser = null
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("currentUser")
-  }
+export function setCurrentUser(user: User): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+}
+
+export function clearCurrentUser(): void {
+  localStorage.removeItem(STORAGE_KEY);
 }
 
 export function initializeAuth(): void {
-  if (typeof window !== "undefined") {
-    const stored = localStorage.getItem("currentUser")
-    if (stored) {
-      try {
-        currentUser = JSON.parse(stored)
-      } catch (error) {
-        localStorage.removeItem("currentUser")
-      }
+  // Limpar dados antigos se necessário
+  const user = getCurrentUser();
+  if (user && !user.id) {
+    clearCurrentUser();
+  }
+}
+
+export async function loginOrRegister(
+  email: string,
+  name: string
+): Promise<User> {
+  try {
+    // Tentar buscar usuário existente por email
+    const existingUser = await usersApi.findByEmail(email);
+    setCurrentUser(existingUser);
+    return existingUser;
+  } catch (error: unknown) {
+    // Se não encontrou (404), criar novo usuário
+    const isApiError = (e: unknown): e is { status?: number } =>
+      typeof e === "object" &&
+      e !== null &&
+      "status" in e &&
+      typeof e.status === "number";
+
+    if (isApiError(error) && error.status === 404) {
+      const newUser = await usersApi.create({ email, name });
+      setCurrentUser(newUser);
+      return newUser;
     }
+    throw error;
   }
 }

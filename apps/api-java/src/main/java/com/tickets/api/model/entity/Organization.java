@@ -1,6 +1,6 @@
+// tickets-transporte-publico/apps/api-java/src/main/java/com/tickets/api/model/entity/Organization.java
 package com.tickets.api.model.entity;
 
-import com.tickets.api.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "users", indexes = {
-    @Index(name = "idx_user_email", columnList = "email")
+@Table(name = "organizations", indexes = {
+    @Index(name = "idx_org_cnpj", columnList = "cnpj", unique = true),
+    @Index(name = "idx_org_name", columnList = "name")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -21,22 +22,26 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Organization {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(nullable = false, unique = true)
-    private String email;
-
     @Column(nullable = false)
     private String name;
 
-    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true, length = 14)
+    private String cnpj;
+
     @Column(nullable = false)
-    @Builder.Default
-    private UserRole role = UserRole.PEDESTRIAN;
+    private String type; // Ex: "Prefeitura", "Empresa de Transporte", etc.
+
+    @Column(name = "main_contact", nullable = false)
+    private String mainContact; // Email ou telefone principal
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -47,23 +52,11 @@ public class User {
     private Instant updatedAt;
 
     // Relações
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Report> reports = new ArrayList<>();
+    private List<User> administrators = new ArrayList<>();
 
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Location> managedLocations = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @Builder.Default
-    private List<StatusHistory> statusUpdates = new ArrayList<>();
-
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
-    @Builder.Default
-    private List<Comment> comments = new ArrayList<>();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id")
-    private Organization organization;
 }
