@@ -60,3 +60,27 @@ export async function loginOrRegister(
     throw error;
   }
 }
+
+export async function signIn(
+  email: string,
+  name: string
+): Promise<{ success: boolean; user?: User; error?: string }> {
+  try {
+    const user = await loginOrRegister(email, name);
+    return {
+      success: true,
+      user,
+    };
+  } catch (error) {
+    console.error("Error signing in:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Ocorreu um erro inesperado",
+    };
+  }
+}
+
+export function signOut(): void {
+  clearCurrentUser();
+}
