@@ -1,9 +1,3 @@
--- Flyway baseline generated from JPA metadata
--- Timestamp: 2025-10-22T18:36:26.0011818-03:00
-
--- Ensure required extensions exist
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
 
     create table bus_stops (
         has_bench boolean,

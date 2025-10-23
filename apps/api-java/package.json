@@ -4,21 +4,22 @@
   "private": true,
   "scripts": {
     "build": "run-script-os",
-    "build:win32": "mvnw.cmd clean package -DskipTests",
+    "build:win32": "powershell -ExecutionPolicy Bypass -File ./mvnw.ps1 clean package -DskipTests",
     "build:darwin:linux": "./mvnw clean package -DskipTests",
     "dev": "run-script-os",
-    "dev:win32": "mvnw.cmd spring-boot:run",
+    "dev:win32": "powershell -ExecutionPolicy Bypass -File ./mvnw.ps1 spring-boot:run",
     "dev:darwin:linux": "./mvnw spring-boot:run",
     "start": "java -jar target/api-java-1.0.0.jar",
     "test": "run-script-os",
-    "test:win32": "mvnw.cmd test",
+    "test:win32": "powershell -ExecutionPolicy Bypass -File ./mvnw.ps1 test",
     "test:darwin:linux": "./mvnw test",
     "test:full": "run-script-os",
-    "test:full:win32": "mvnw.cmd clean verify",
+    "test:full:win32": "powershell -ExecutionPolicy Bypass -File ./mvnw.ps1 clean verify",
     "test:full:darwin:linux": "./mvnw clean verify",
     "docker:build": "docker build -t tickets-api-java:local .",
     "lint": "echo 'Java linting with checkstyle/spotless not configured yet'",
-    "check-types": "echo 'Java type checking done during compile'"
+    "check-types": "echo 'Java type checking done during compile'",
+    "migrate:gen": "powershell -ExecutionPolicy Bypass -File ./scripts/gen-migration.ps1"
   },
   "devDependencies": {
     "run-script-os": "^1.1.6"

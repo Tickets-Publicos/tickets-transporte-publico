@@ -6,7 +6,7 @@ export interface ProblemCategory {
 
 export interface Report {
   id: number
-  user_id: number
+  user_id: string
   location_id: number
   problem_category_id: number
   title: string
@@ -17,7 +17,7 @@ export interface Report {
 }
 
 export interface CreateReportData {
-  user_id: number
+  user_id: string
   location_id: number
   problem_category_id: number
   title: string
@@ -39,7 +39,7 @@ export const problemCategories: ProblemCategory[] = [
 const reports: Report[] = [
   {
     id: 1,
-    user_id: 1,
+    user_id: "1",
     location_id: 1,
     problem_category_id: 1,
     title: "Rampa danificada no ponto da Paulista",
@@ -50,7 +50,7 @@ const reports: Report[] = [
   },
   {
     id: 2,
-    user_id: 2,
+    user_id: "2",
     location_id: 4,
     problem_category_id: 2,
     title: "Piso tátil interrompido na Estação Sé",
@@ -61,7 +61,7 @@ const reports: Report[] = [
   },
   {
     id: 3,
-    user_id: 3,
+    user_id: "3",
     location_id: 8,
     problem_category_id: 3,
     title: "Elevador fora de funcionamento",
@@ -80,7 +80,7 @@ export function getAllReports(): Report[] {
   return reports
 }
 
-export function getReportsByUser(userId: number): Report[] {
+export function getReportsByUser(userId: string): Report[] {
   return reports.filter((report) => report.user_id === userId)
 }
 
@@ -103,7 +103,7 @@ export async function createReport(
     reports.push(newReport)
 
     return { success: true, report: newReport }
-  } catch (error) {
+  } catch {
     return { success: false, error: "Erro ao criar reporte" }
   }
 }

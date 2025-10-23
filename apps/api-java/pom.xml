@@ -125,9 +125,16 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>9.22.0</version>
                 <configuration>
-                    <url>${spring.datasource.url}</url>
-                    <user>${spring.datasource.username}</user>
-                    <password>${spring.datasource.password}</password>
+                    <!-- Use env vars if available, else fall back to local dev defaults -->
+                    <url>${env.SPRING_DATASOURCE_URL}</url>
+                    <user>${env.SPRING_DATASOURCE_USERNAME}</user>
+                    <password>${env.SPRING_DATASOURCE_PASSWORD}</password>
+                    <schemas>
+                        <schema>public</schema>
+                    </schemas>
+                    <locations>
+                        <location>classpath:db/migration</location>
+                    </locations>
                 </configuration>
             </plugin>
 
@@ -154,6 +161,7 @@
                     </execution>
                 </executions>
             </plugin>
+            
         </plugins>
     </build>
 </project>

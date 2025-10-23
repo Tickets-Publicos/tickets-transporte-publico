@@ -8,15 +8,33 @@ import { Button } from "@/components/ui/button"
 import { getCurrentUser, initializeAuth, type User } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin, AlertTriangle, Users, Plus, BarChart3 } from "lucide-react"
+import { api } from "@/lib/api"
+import type { StatsOverview } from "@/lib/api/types"
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null)
   const [showLogin, setShowLogin] = useState(false)
+  const [stats, setStats] = useState<StatsOverview | null>(null)
+  const [loadingStats, setLoadingStats] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     initializeAuth()
     setUser(getCurrentUser())
+    // Fetch stats overview
+    async function fetchStats () {
+      try {
+        setLoadingStats(true)
+        const data = await api.stats.getOverview()
+        setStats(data)
+      } catch {
+        // ignore for now; UI falls back to zeros
+        setStats({ locationsCount: 0, activeReportsCount: 0, usersCount: 0, categoriesBreakdown: [] })
+      } finally {
+        setLoadingStats(false)
+      }
+    }
+    fetchStats()
   }, [])
 
   const handleLoginSuccess = () => {
@@ -89,7 +107,7 @@ export default function HomePage() {
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">10</div>
+              <div className="text-2xl font-bold">{stats?.locationsCount ?? (loadingStats ? '...' : 0)}</div>
               <p className="text-xs text-muted-foreground">Pontos de ônibus e estações</p>
             </CardContent>
           </Card>
@@ -100,7 +118,7 @@ export default function HomePage() {
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">{stats?.activeReportsCount ?? (loadingStats ? '...' : 0)}</div>
               <p className="text-xs text-muted-foreground">Problemas aguardando solução</p>
             </CardContent>
           </Card>
@@ -111,7 +129,7 @@ export default function HomePage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">{stats?.usersCount ?? (loadingStats ? '...' : 0)}</div>
               <p className="text-xs text-muted-foreground">Pessoas contribuindo</p>
             </CardContent>
           </Card>
@@ -163,26 +181,15 @@ export default function HomePage() {
               <CardDescription>Principais categorias de problemas reportados</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Rampas de Acesso</span>
-                <span className="text-sm text-muted-foreground">25%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Piso Tátil</span>
-                <span className="text-sm text-muted-foreground">20%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Elevadores</span>
-                <span className="text-sm text-muted-foreground">18%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Sinalização</span>
-                <span className="text-sm text-muted-foreground">15%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Outros</span>
-                <span className="text-sm text-muted-foreground">22%</span>
-              </div>
+              {(stats?.categoriesBreakdown ?? []).sort((a,b) => b.percentage - a.percentage).slice(0,5).map((item) => (
+                <div key={item.categoryId} className="flex justify-between items-center">
+                  <span className="text-sm">{item.categoryName}</span>
+                  <span className="text-sm text-muted-foreground">{item.percentage}%</span>
+                </div>
+              ))}
+              {(!stats || stats.categoriesBreakdown.length === 0) && (
+                <div className="text-sm text-muted-foreground">{loadingStats ? 'Carregando…' : 'Sem dados ainda.'}</div>
+              )}
             </CardContent>
           </Card>
         </section>

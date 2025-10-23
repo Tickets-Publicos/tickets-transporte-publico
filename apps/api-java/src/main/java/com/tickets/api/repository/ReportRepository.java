@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.tickets.api.repository.projection.CategoryCountProjection;
+import java.util.List;
 
 @Repository
 public interface ReportRepository extends JpaRepository<Report, String> {
@@ -32,4 +34,11 @@ public interface ReportRepository extends JpaRepository<Report, String> {
         @Param("authorId") String authorId,
         Pageable pageable
     );
+
+    @Query("SELECT r.category.id as categoryId, r.category.name as categoryName, COUNT(r) as count " +
+           "FROM Report r GROUP BY r.category.id, r.category.name")
+    List<CategoryCountProjection> countReportsByCategory();
+
+    @Query("SELECT COUNT(r) FROM Report r WHERE r.status NOT IN :excluded")
+    long countByStatusNotIn(@Param("excluded") List<ReportStatus> excluded);
 }

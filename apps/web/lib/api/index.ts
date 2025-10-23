@@ -11,10 +11,12 @@ import { usersApi } from './users'
 import { categoriesApi } from './categories'
 import { locationsApi } from './locations'
 import { reportsApi } from './reports'
+import { statsApi } from './stats'
 
 export const api = {
   users: usersApi,
   categories: categoriesApi,
   locations: locationsApi,
   reports: reportsApi,
+  stats: statsApi,
 }

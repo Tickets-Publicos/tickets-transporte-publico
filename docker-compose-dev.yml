@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:17
+    image: postgres
     container_name: tickets-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

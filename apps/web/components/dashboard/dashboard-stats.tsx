@@ -8,13 +8,13 @@ import { locations, locationTypes } from "@/lib/locations"
 
 interface DashboardStatsProps {
   userReports?: boolean
-  userId?: number
+  userId?: string
   className?: string
 }
 
 export function DashboardStats({ userReports = false, userId, className }: DashboardStatsProps) {
   const allReports = getAllReports()
-  const reports = userReports && userId ? allReports.filter((report) => report.user_id === userId) : allReports
+  const reports = userReports && userId ? allReports.filter((report) => String(report.user_id) === userId) : allReports
 
   // Status counts
   const statusCounts = {

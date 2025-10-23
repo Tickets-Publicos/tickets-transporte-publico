@@ -122,3 +122,18 @@ export interface ReportFilters {
   categoryId?: string
   authorId?: string
 }
+
+// Stats
+export interface CategoryBreakdownItem {
+  categoryId: string
+  categoryName: string
+  count: number
+  percentage: number
+}
+
+export interface StatsOverview {
+  locationsCount: number
+  activeReportsCount: number
+  usersCount: number
+  categoriesBreakdown: CategoryBreakdownItem[]
+}

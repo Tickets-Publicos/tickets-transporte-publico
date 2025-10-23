@@ -20,7 +20,7 @@ import { ptBR } from "date-fns/locale"
 
 interface ReportsListProps {
   userReports?: boolean
-  userId?: number
+  userId?: string
   className?: string
 }
 
@@ -30,7 +30,7 @@ export function ReportsList({ userReports = false, userId, className }: ReportsL
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
 
   const allReports = getAllReports()
-  const reports = userReports && userId ? allReports.filter((report) => report.user_id === userId) : allReports
+  const reports = userReports && userId ? allReports.filter((report) => String(report.user_id) === userId) : allReports
 
   const filteredReports = reports.filter((report) => {
     const matchesSearch =
