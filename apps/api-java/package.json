@@ -7,7 +7,7 @@
     "build:win32": "powershell -ExecutionPolicy Bypass -File ./mvnw.ps1 clean package -DskipTests",
     "build:darwin:linux": "./mvnw clean package -DskipTests",
     "dev": "run-script-os",
-    "dev:win32": "powershell -ExecutionPolicy Bypass -File ./mvnw.ps1 spring-boot:run",
+    "dev:win32": "powershell -ExecutionPolicy Bypass -File ./mvnw.ps1 -X spring-boot:run",
     "dev:darwin:linux": "./mvnw spring-boot:run",
     "start": "java -jar target/api-java-1.0.0.jar",
     "test": "run-script-os",
