@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.7</version>
         <relativePath/>
     </parent>
 
@@ -19,9 +19,9 @@
     <description>API REST para gerenciamento de problemas em transporte público</description>
 
     <properties>
-        <java.version>21</java.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>25</java.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -81,12 +81,12 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.5.5.Final</version>
+            <version>1.6.3</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
-            <version>1.5.5.Final</version>
+            <version>1.6.3</version>
             <scope>provided</scope>
         </dependency>
         
@@ -94,6 +94,13 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>10.20.1</version>
+        </dependency>
+        <!-- Flyway v10+ modular DB support requires explicit database plugin -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>10.20.1</version>
         </dependency>
 
             <!-- Dotenv para ler variáveis do arquivo .env -->
@@ -124,7 +131,7 @@
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <version>9.22.0</version>
+                <version>10.20.1</version>
                 <configuration>
                     <!-- Use env vars if available, else fall back to local dev defaults -->
                     <url>${env.SPRING_DATASOURCE_URL}</url>
@@ -143,7 +150,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.10</version>
+                <version>0.8.14</version>
                 <executions>
                     <!-- prepara o agent antes dos testes -->
                     <execution>

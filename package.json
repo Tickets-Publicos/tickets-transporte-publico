@@ -8,7 +8,10 @@
     "test": "dotenv -e .env -- turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "migrate:gen": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./apps/api-java/scripts/gen-migration.ps1 -Name baseline"
+    "migrate:gen": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./apps/api-java/scripts/gen-migration.ps1 -Name baseline",
+    "migrate": "dotenv -e .env -- pwsh -NoProfile -ExecutionPolicy Bypass -File ./apps/api-java/scripts/flyway-migrate.ps1",
+    "migrate:info": "dotenv -e .env -- pwsh -NoProfile -ExecutionPolicy Bypass -File ./apps/api-java/scripts/flyway-migrate.ps1 -Goal flyway:info",
+    "migrate:validate": "dotenv -e .env -- pwsh -NoProfile -ExecutionPolicy Bypass -File ./apps/api-java/scripts/flyway-migrate.ps1 -Goal flyway:validate"
   },
   "devDependencies": {
     "dotenv-cli": "^7.4.1",

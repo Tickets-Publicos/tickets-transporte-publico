@@ -17,6 +17,7 @@ Este documento explica como gerar e executar migrations no projeto usando **Flyw
 ## Visão Geral
 
 O projeto utiliza:
+
 - **Flyway** para versionamento e aplicação de migrations
 - **Hibernate JPA** para geração automática do schema DDL
 - **PostgreSQL 17** como banco de dados
@@ -31,12 +32,14 @@ As migrations são armazenadas em: `src/main/resources/db/migration/`
 Antes de trabalhar com migrations, certifique-se de que:
 
 1. **Docker está rodando** com o container PostgreSQL ativo:
+
    ```powershell
    docker ps
    # Deve mostrar o container 'tickets-postgres' rodando
    ```
 
 2. **Variáveis de ambiente configuradas** no arquivo `.env` na raiz do projeto:
+
    ```env
    SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/tickets
    SPRING_DATASOURCE_USERNAME=postgres
@@ -103,7 +106,10 @@ cd apps/api-java
   flyway:migrate
 ```
 
+> Nota: Se o wrapper do Maven (mvnw) não conseguir baixar dependências por falta de internet, use um Maven local instalado (mvn) ou rode via Docker/CI.
+
 **Output esperado:**
+
 ```
 [INFO] Migrating schema "public" to version "2 - add user table"
 [INFO] Successfully applied 1 migration to schema "public", now at version v2
@@ -134,6 +140,7 @@ Mostra quais migrations foram aplicadas e quais estão pendentes:
 ```
 
 **Output exemplo:**
+
 ```
 +-----------+---------+------------------+------+---------------------+---------+
 | Category  | Version | Description      | Type | Installed On        | State   |
@@ -172,6 +179,7 @@ docker exec -it tickets-postgres psql -U postgres -d tickets
 ```
 
 Dentro do psql:
+
 ```sql
 -- Listar tabelas
 \dt
@@ -212,10 +220,10 @@ Edite suas classes em `src/main/java/com/tickets/api/model/entity/`:
 public class User {
     @Id
     private String id;
-    
+
     @Column(nullable = false, unique = true)
     private String email;
-    
+
     // ... outros campos
 }
 ```
@@ -229,9 +237,18 @@ pnpm migrate:gen
 ### 3. Revisar o Arquivo Gerado
 
 Abra `src/main/resources/db/migration/V{n}__{nome}.sql` e:
+
 - Verifique se o DDL está correto
 - Adicione dados iniciais se necessário (seeds)
 - Ajuste constraints ou índices conforme necessário
+
+#### Seeds iniciais
+
+Este repositório inclui uma migration de seed para locais padrão de São Paulo:
+
+- `V2__seed_default_locations.sql`: insere pontos de ônibus (BusStop), estações de metrô (MetroStation) e estações de trem (Location base) como dados iniciais.
+
+Caso queira alterar os locais padrão, edite essa migration antes de aplicá-la no ambiente. Para ambientes já migrados, crie uma nova migration de seed incremental (ex.: `V3__seed_more_locations.sql`).
 
 ### 4. Aplicar a Migration
 
@@ -263,8 +280,9 @@ Certifique-se de que a aplicação inicia sem erros e as entidades JPA estão ma
 **Causa:** As propriedades JPA de geração de schema não estão configuradas.
 
 **Solução:** Verifique se `SchemaExporter.java` está configurando todas as propriedades necessárias:
+
 ```java
-System.setProperty("spring.jpa.properties.jakarta.persistence.schema-generation.scripts.create-target", 
+System.setProperty("spring.jpa.properties.jakarta.persistence.schema-generation.scripts.create-target",
     "src/main/resources/db/changelog/jpa_create.sql");
 ```
 
@@ -273,6 +291,7 @@ System.setProperty("spring.jpa.properties.jakarta.persistence.schema-generation.
 **Causa:** Você alterou uma migration que já foi aplicada no banco.
 
 **Solução 1 (DEV):** Recriar o banco do zero:
+
 ```powershell
 docker exec -i tickets-postgres psql -U postgres -c "DROP DATABASE tickets;"
 docker exec -i tickets-postgres psql -U postgres -c "CREATE DATABASE tickets;"
@@ -280,6 +299,7 @@ docker exec -i tickets-postgres psql -U postgres -c "CREATE DATABASE tickets;"
 ```
 
 **Solução 2:** Usar `flyway:repair` (apenas se souber o que está fazendo):
+
 ```powershell
 ./mvnw.ps1 -Dflyway.url=jdbc:postgresql://localhost:5432/tickets -Dflyway.user=postgres -Dflyway.password=postgres flyway:repair
 ```
@@ -289,6 +309,7 @@ docker exec -i tickets-postgres psql -U postgres -c "CREATE DATABASE tickets;"
 **Causa:** Container PostgreSQL não está rodando.
 
 **Solução:**
+
 ```powershell
 # Verificar containers
 docker ps -a
@@ -305,6 +326,7 @@ docker-compose -f docker-compose-dev.yml up -d postgres
 **Causa:** PostgreSQL não está aceitando conexões.
 
 **Solução:**
+
 ```powershell
 # Verificar logs do container
 docker logs tickets-postgres
@@ -321,6 +343,7 @@ docker restart tickets-postgres
 **Causa:** Arquivos estão no diretório errado ou não seguem o padrão de nomenclatura.
 
 **Solução:** Verifique:
+
 1. Arquivos devem estar em `src/main/resources/db/migration/`
 2. Nomenclatura: `V{número}__{descrição}.sql` (dois underscores!)
 3. Exemplos válidos:
@@ -352,13 +375,14 @@ docker restart tickets-postgres
    - ❌ `V2__changes.sql`
 
 4. **Teste as migrations em ambiente local antes de commitar**
+
    ```powershell
    # Limpar banco
    docker exec -i tickets-postgres psql -U postgres -c "DROP DATABASE tickets; CREATE DATABASE tickets;"
-   
+
    # Aplicar todas as migrations do zero
    ./mvnw.ps1 -Dflyway.url=jdbc:postgresql://localhost:5432/tickets -Dflyway.user=postgres -Dflyway.password=postgres flyway:migrate
-   
+
    # Testar aplicação
    pnpm dev
    ```

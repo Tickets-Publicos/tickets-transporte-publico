@@ -4,7 +4,7 @@
 # Etapa 1: Runtime (imagem leve apenas com JRE)
 # Usa JAR pré-compilado do CI ou build local
 # ==============================================================================
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 WORKDIR /app
 
