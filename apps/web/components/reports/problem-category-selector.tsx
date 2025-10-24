@@ -167,8 +167,8 @@ export function ProblemCategorySelector({
         <div className="mt-4 p-3 bg-muted rounded-lg">
           <p className="text-sm text-muted-foreground">
             <strong>Dica:</strong> Se você não tem certeza sobre a categoria,
-            escolha &ldquo;Outros&rdquo; e descreva detalhadamente o problema no campo de
-            descrição.
+            escolha &ldquo;Outros&rdquo; e descreva detalhadamente o problema no
+            campo de descrição.
           </p>
         </div>
       </CardContent>
