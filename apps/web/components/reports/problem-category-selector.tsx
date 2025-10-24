@@ -145,15 +145,15 @@ export function ProblemCategorySelector({
               variant={
                 selectedCategory?.id === category.id ? "default" : "outline"
               }
-              className="h-auto p-4 justify-start"
+              className="h-auto p-4 justify-start items-start w-full overflow-hidden"
               onClick={() => onCategorySelect(category)}
             >
               <div className="flex items-start gap-3 w-full">
                 {getCategoryIcon(category.name)}
-                <div className="flex-1 text-left">
+                <div className="flex-1 min-w-0 text-left">
                   <div className="font-medium mb-1">{category.name}</div>
                   {category.description && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-muted-foreground leading-relaxed wrap-break-word whitespace-normal overflow-hidden">
                       {category.description}
                     </p>
                   )}
