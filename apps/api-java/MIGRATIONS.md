@@ -250,6 +250,10 @@ Este repositório inclui uma migration de seed para locais padrão de São Paulo
 
 Caso queira alterar os locais padrão, edite essa migration antes de aplicá-la no ambiente. Para ambientes já migrados, crie uma nova migration de seed incremental (ex.: `V3__seed_more_locations.sql`).
 
+Além disso, há seed para categorias padrão:
+
+- `V3__seed_default_categories.sql`: insere categorias com tipos compatíveis com o enum `CategoryType` (RAMP, TACTILE_FLOOR, ELEVATOR, SIGNAGE, ACCESSIBILITY, INFRASTRUCTURE, OTHER). A migration usa `ON CONFLICT (name) DO NOTHING` para evitar duplicatas caso algum dado já exista.
+
 ### 4. Aplicar a Migration
 
 ```powershell
