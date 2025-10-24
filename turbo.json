@@ -5,6 +5,14 @@
     "NODE_ENV",
     "PORT",
     "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_APP_URL",
+    "AUTH_SECRET",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+    "MICROSOFT_CLIENT_ID",
+    "MICROSOFT_CLIENT_SECRET",
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",
     "CORS_ORIGIN",
@@ -39,7 +47,19 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "apps/api-java/target/**"],
-      "env": ["NEXT_PUBLIC_API_URL", "NEXTAUTH_SECRET", "NEXTAUTH_URL"]
+      "env": [
+        "NEXT_PUBLIC_API_URL",
+        "AUTH_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GITHUB_CLIENT_ID",
+        "GITHUB_CLIENT_SECRET",
+        "MICROSOFT_CLIENT_ID",
+        "MICROSOFT_CLIENT_SECRET",
+        "NEXT_PUBLIC_APP_URL",
+        "NEXTAUTH_SECRET",
+        "NEXTAUTH_URL"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
