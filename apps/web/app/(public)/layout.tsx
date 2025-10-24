@@ -10,21 +10,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { LoginForm } from "@/components/auth/login-form";
-import { useRouter } from "next/navigation";
 
 export default function PublicLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const [openLogin, setOpenLogin] = useState(false);
-  const router = useRouter();
-
-  const handleLoginSuccess = () => {
-    setOpenLogin(false);
-    // Pequeno delay para garantir que o estado foi atualizado
-    setTimeout(() => {
-      router.refresh();
-    }, 100);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,7 +27,7 @@ export default function PublicLayout({
           <SheetHeader>
             <SheetTitle>Entrar</SheetTitle>
           </SheetHeader>
-          <LoginForm onSuccess={handleLoginSuccess} />
+          <LoginForm />
         </SheetContent>
       </Sheet>
     </div>

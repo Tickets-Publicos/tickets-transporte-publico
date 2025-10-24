@@ -84,7 +84,7 @@ export default function HomePage() {
             <p className="text-sm text-muted-foreground mb-4">
               Para começar a reportar problemas, faça seu cadastro:
             </p>
-            <LoginForm onSuccess={() => router.refresh()} />
+            <LoginForm />
           </div>
         )}
       </section>

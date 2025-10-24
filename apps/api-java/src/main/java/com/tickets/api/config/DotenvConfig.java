@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
+import org.springframework.lang.NonNull;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,9 +18,8 @@ import java.util.Map;
  * Esta classe é executada antes da inicialização do Spring Boot
  */
 public class DotenvConfig implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
   @Override
-  public void initialize(ConfigurableApplicationContext applicationContext) {
+  public void initialize(@NonNull ConfigurableApplicationContext applicationContext) {
     // Tenta encontrar o arquivo .env na raiz do projeto (dois níveis acima)
     Path currentDir = Paths.get("").toAbsolutePath();
     Path envFile = findEnvFile(currentDir);

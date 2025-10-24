@@ -3,7 +3,6 @@
 
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/auth/user-menu";
-import { signOut } from "@/lib/auth";
 import { useAuth } from "@/hooks/use-auth";
 import { MapPin } from "lucide-react";
 
@@ -12,11 +11,7 @@ interface HeaderProps {
 }
 
 export function Header({ onLoginClick }: HeaderProps) {
-  const user = useAuth();
-
-  const handleSignOut = () => {
-    signOut();
-  };
+  const { user, isAuthenticated, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -30,8 +25,8 @@ export function Header({ onLoginClick }: HeaderProps) {
         </div>
 
         <nav className="flex items-center space-x-4">
-          {user ? (
-            <UserMenu user={user} onSignOut={handleSignOut} />
+          {isAuthenticated && user ? (
+            <UserMenu user={user} onSignOut={signOut} />
           ) : (
             <Button onClick={onLoginClick} variant="default">
               Entrar

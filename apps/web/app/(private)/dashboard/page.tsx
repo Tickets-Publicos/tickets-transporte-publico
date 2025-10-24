@@ -11,20 +11,20 @@ import { Plus, BarChart3, List } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {
-  const user = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
+    if (!isAuthenticated) {
       router.push("/");
     }
-  }, [user, router]);
+  }, [isAuthenticated, router]);
 
   const handleNewReport = () => {
     router.push("/new-report");
   };
 
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return null;
   }
 

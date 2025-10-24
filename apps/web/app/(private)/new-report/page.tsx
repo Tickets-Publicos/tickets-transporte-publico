@@ -6,14 +6,14 @@ import { NewReportForm } from "@/components/reports/new-report-form";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function NewReportPage() {
-  const user = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
+    if (!isAuthenticated) {
       router.push("/");
     }
-  }, [user, router]);
+  }, [isAuthenticated, router]);
 
   if (!user) {
     return null;
