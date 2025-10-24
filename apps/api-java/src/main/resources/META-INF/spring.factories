@@ -1,1 +1,1 @@
-com.tickets.api.config.DotenvConfig
+org.springframework.context.ApplicationContextInitializer=com.tickets.api.config.DotenvConfig
