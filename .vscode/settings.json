@@ -1,14 +1,13 @@
 {
-    "css.customData": [
-        ".vscode/tailwind.json"
-    ],
-    "files.associations": {
-        "*.css": "tailwindcss"
-    },
-    "eslint.workingDirectories": [
+  "css.customData": [".vscode/tailwind.json"],
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
   ],
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
