@@ -1,10 +1,23 @@
-// tickets-transporte-publico/apps/web/lib/auth.ts
+// web/lib/auth.ts
 import { usersApi } from "./api/users";
 import type { User } from "./api/types";
 
 const STORAGE_KEY = "current_user";
 
+// Event system para notificar mudanças de autenticação
+type AuthListener = (user: User | null) => void;
+const authListeners = new Set<AuthListener>();
+
 export type { User };
+
+export function subscribeToAuth(listener: AuthListener): () => void {
+  authListeners.add(listener);
+  return () => authListeners.delete(listener);
+}
+
+function notifyAuthChange(user: User | null): void {
+  authListeners.forEach(listener => listener(user));
+}
 
 export function getCurrentUser(): User | null {
   if (typeof window === "undefined") return null;
@@ -21,14 +34,15 @@ export function getCurrentUser(): User | null {
 
 export function setCurrentUser(user: User): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  notifyAuthChange(user);
 }
 
 export function clearCurrentUser(): void {
   localStorage.removeItem(STORAGE_KEY);
+  notifyAuthChange(null);
 }
 
 export function initializeAuth(): void {
-  // Limpar dados antigos se necessário
   const user = getCurrentUser();
   if (user && !user.id) {
     clearCurrentUser();
@@ -40,12 +54,10 @@ export async function loginOrRegister(
   name: string
 ): Promise<User> {
   try {
-    // Tentar buscar usuário existente por email
     const existingUser = await usersApi.findByEmail(email);
     setCurrentUser(existingUser);
     return existingUser;
   } catch (error: unknown) {
-    // Se não encontrou (404), criar novo usuário
     const isApiError = (e: unknown): e is { status?: number } =>
       typeof e === "object" &&
       e !== null &&

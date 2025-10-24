@@ -2,15 +2,16 @@
   "name": "my-turborepo",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
+    "build": "dotenv -e .env -- turbo run build",
+    "dev": "dotenv -e .env -- turbo run dev",
+    "lint": "dotenv -e .env -- turbo run lint",
+    "test": "dotenv -e .env -- turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "migrate:gen": "pwsh -NoProfile -ExecutionPolicy Bypass -File ./apps/api-java/scripts/gen-migration.ps1 -Name baseline"
   },
   "devDependencies": {
+    "dotenv-cli": "^7.4.1",
     "prettier": "^3.6.2",
     "turbo": "^2.5.8",
     "typescript": "5.9.3"

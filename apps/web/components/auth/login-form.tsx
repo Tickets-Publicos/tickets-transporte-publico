@@ -50,7 +50,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           variant: "destructive",
         })
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Login error:", err)
       toast({
         title: "Erro no login",
         description: "Ocorreu um erro inesperado.",

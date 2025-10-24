@@ -8,6 +8,10 @@
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",
     "CORS_ORIGIN",
+    "CORS_ALLOWED_ORIGINS",
+    "CORS_ALLOWED_METHODS",
+    "CORS_ALLOWED_HEADERS",
+    "CORS_ALLOW_CREDENTIALS",
     "DATABASE_URL",
     "POSTGRES_DB",
     "POSTGRES_USER",
@@ -35,11 +39,7 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "apps/api-java/target/**"],
-      "env": [
-        "NEXT_PUBLIC_API_URL",
-        "NEXTAUTH_SECRET",
-        "NEXTAUTH_URL"
-      ]
+      "env": ["NEXT_PUBLIC_API_URL", "NEXTAUTH_SECRET", "NEXTAUTH_URL"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -63,6 +63,10 @@
       "env": [
         "PORT",
         "CORS_ORIGIN",
+        "CORS_ALLOWED_ORIGINS",
+        "CORS_ALLOWED_METHODS",
+        "CORS_ALLOWED_HEADERS",
+        "CORS_ALLOW_CREDENTIALS",
         "NEXT_PUBLIC_API_URL",
         "DATABASE_URL",
         "SPRING_DATASOURCE_URL"

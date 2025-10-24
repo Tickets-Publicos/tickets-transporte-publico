@@ -7,7 +7,8 @@
     "dev": "next dev",
     "lint": "next lint",
     "check-types": "tsc --noEmit",
-  "test": "jest",
+    "eslint:fix": "eslint . --fix",
+    "test": "jest",
     "start": "next start"
   },
   "dependencies": {

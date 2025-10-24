@@ -131,6 +131,31 @@ export interface CategoryBreakdownItem {
   percentage: number
 }
 
+export interface LocationTypeBreakdownItem {
+  type: string
+  typeName: string
+  count: number
+  totalLocations: number
+}
+
+export interface StatusBreakdown {
+  pending: number
+  inAnalysis: number
+  resolvedProvisional: number
+  resolvedConfirmed: number
+  archived: number
+}
+
+export interface DashboardStats {
+  totalReports: number
+  pendingReports: number
+  resolvedReports: number
+  resolutionRate: number
+  problemsByCategory: CategoryBreakdownItem[]
+  reportsByLocationType: LocationTypeBreakdownItem[]
+  statusBreakdown: StatusBreakdown
+}
+
 export interface StatsOverview {
   locationsCount: number
   activeReportsCount: number

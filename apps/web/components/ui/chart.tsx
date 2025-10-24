@@ -92,7 +92,7 @@ type RechartsPayloadItemSafe = {
   value?: number | string
   dataKey?: string
   color?: string
-  payload?: Record<string, any>
+  payload?: Record<string, unknown>
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip
@@ -142,9 +142,11 @@ function ChartTooltipContent({
 }: ChartTooltipContentProps) 
   {
   const { config } = useChart()
-  const items: RechartsPayloadItemSafe[] = (payload as RechartsPayloadItemSafe[])?.filter(Boolean) || []
-
-  if (!active || !items.length) return null
+  
+  const items: RechartsPayloadItemSafe[] = React.useMemo(
+    () => (payload as RechartsPayloadItemSafe[])?.filter(Boolean) || [],
+    [payload]
+  )
 
   const tooltipLabel = React.useMemo(() => {
     if (hideLabel || !items.length) return null
@@ -163,12 +165,16 @@ function ChartTooltipContent({
     return <div className={cn("font-medium", labelClassName)}>{value}</div>
   }, [items, label, labelFormatter, hideLabel, labelClassName, config, labelKey])
 
-  const nestLabel = items.length === 1 && indicator !== "dot"
+  const nestLabel = React.useMemo(() => {
+    return items.length === 1 && indicator !== "dot"
+  }, [items.length, indicator])
+
+  if (!active || !items.length) return null
 
   return (
     <div
       className={cn(
-        "border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
+        "border-border/50 bg-background grid min-w-32 items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
         className
       )}
     >
@@ -276,14 +282,21 @@ function ChartLegendContent({
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string) {
   if (typeof payload !== "object" || payload === null) return undefined
+  
+  const payloadRecord = payload as Record<string, unknown>
   const payloadPayload =
-    "payload" in payload && typeof (payload as any).payload === "object" && (payload as any).payload !== null
-      ? (payload as any).payload
+    "payload" in payloadRecord && 
+    typeof payloadRecord.payload === "object" && 
+    payloadRecord.payload !== null
+      ? (payloadRecord.payload as Record<string, unknown>)
       : undefined
 
   let configLabelKey: string = key
-  if (key in payload && typeof (payload as any)[key] === "string") configLabelKey = (payload as any)[key]
-  else if (payloadPayload && key in payloadPayload && typeof payloadPayload[key] === "string") configLabelKey = payloadPayload[key]
+  if (key in payloadRecord && typeof payloadRecord[key] === "string") {
+    configLabelKey = payloadRecord[key] as string
+  } else if (payloadPayload && key in payloadPayload && typeof payloadPayload[key] === "string") {
+    configLabelKey = payloadPayload[key] as string
+  }
 
   return configLabelKey in config ? config[configLabelKey] : config[key as keyof typeof config]
 }

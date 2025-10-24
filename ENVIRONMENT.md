@@ -104,13 +104,7 @@ pnpm dev
 
 ### Verificar se as variáveis estão sendo carregadas
 
-```bash
-# No PowerShell
-echo $env:SPRING_DATASOURCE_URL
-
-# No bash/zsh
-echo $SPRING_DATASOURCE_URL
-```
+docker-compose -f docker-compose-dev.yml up
 
 ## 📚 Referências
 

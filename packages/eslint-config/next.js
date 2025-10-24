@@ -13,6 +13,11 @@ import { config as baseConfig } from "./base.js";
  * @type {import("eslint").Linter.Config[]}
  * */
 export const nextJsConfig = [
+  // ensure these paths are ignored by ESLint
+  {
+    // Flat config uses "ignores" instead of "ignorePatterns"
+    ignores: ["node_modules/", ".next/", ".turbo/"],
+  },
   ...baseConfig,
   js.configs.recommended,
   eslintConfigPrettier,
