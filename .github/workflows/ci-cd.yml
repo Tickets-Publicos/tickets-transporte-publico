@@ -113,9 +113,20 @@ jobs:
           comment_title: '🧪 Test Results'
           comment_mode: always
 
+      - name: Check if coverage file exists
+        id: coverage-check
+        if: always()
+        run: |
+          if [ -f "apps/web/coverage/cobertura-coverage.xml" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Coverage file not found, skipping coverage report"
+          fi
+
       - name: Code Coverage Report
         uses: irongut/CodeCoverageSummary@v1.3.0
-        if: always()
+        if: always() && steps.coverage-check.outputs.exists == 'true'
         with:
           filename: apps/web/coverage/cobertura-coverage.xml
           badge: true
