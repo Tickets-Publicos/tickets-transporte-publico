@@ -16,7 +16,7 @@ export const nextJsConfig = [
   // ensure these paths are ignored by ESLint
   {
     // Flat config uses "ignores" instead of "ignorePatterns"
-    ignores: ["node_modules/", ".next/", ".turbo/"],
+    ignores: ["node_modules/", ".next/", ".turbo/", "out/", "build/"],
   },
   ...baseConfig,
   js.configs.recommended,

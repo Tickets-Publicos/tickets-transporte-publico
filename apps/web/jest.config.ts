@@ -1,42 +1,47 @@
-import nextJest from 'next/jest'
 import type { Config } from 'jest'
+import nextJest from 'next/jest.js'
 
 const createJestConfig = nextJest({
     // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
-    dir: './'
+    dir: './',
+
 })
 
+// Add any custom config to be passed to Jest
 const config: Config = {
-    // Use ts-jest ESM preset because project uses ESM config
-    preset: 'ts-jest/presets/default-esm',
+    coverageProvider: 'v8',
     testEnvironment: 'jsdom',
-    roots: ['<rootDir>'],
-    testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
-    testPathIgnorePatterns: ['/node_modules/', '/.next/', '/cypress/'],
-    transform: {
-        '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.json', diagnostics: false, useESM: true }]
-    },
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+    // Add more setup options before each test is run
     setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+    // Use tsconfig paths
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/$1'
+        '^@/(.*)$': '<rootDir>/$1',
     },
+    // Collect coverage from all relevant files
+    collectCoverageFrom: [
+        'app/**/*.{js,jsx,ts,tsx}',
+        'components/**/*.{js,jsx,ts,tsx}',
+        'lib/**/*.{js,jsx,ts,tsx}',
+        'hooks/**/*.{js,jsx,ts,tsx}',
+        '!**/*.d.ts',
+        '!**/node_modules/**',
+        '!**/.next/**',
+        '!**/.turbo/**',
+        '!**/coverage/**',
+        '!**/jest.config.ts',
+        '!**/jest.setup.ts',
+    ],
     reporters: [
         'default',
         [
             'jest-junit',
             {
                 outputDirectory: '<rootDir>/reports',
-                outputName: 'junit.xml'
-            }
-        ]
+                outputName: 'junit.xml',
+            },
+        ],
     ],
-    collectCoverage: false
 }
 
-// next/jest returns a config object that can include internal types which
-// leak into the module's exported type and cause `TS4082` during `tsc`.
-// Cast to `unknown` first to avoid leaking private Next.js types to the
-// TypeScript checker, then assert to `Config` so Jest still receives a
-// correctly-typed config at runtime.
-export default createJestConfig(config) as unknown as Config
+// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
+export default createJestConfig(config)
