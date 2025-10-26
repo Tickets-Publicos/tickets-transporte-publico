@@ -90,7 +90,7 @@ jobs:
           # jest-junit reporter is configured in jest.config.ts, so we only need to
           # pass coverage flags here. The JEST_JUNIT_* env vars instruct the reporter
           # where to write the junit XML.
-          pnpm --filter=web run test --runInBand --coverage \
+          pnpm --filter=web run test --coverage \
             --coverageReporters=cobertura \
             --coverageReporters=json-summary \
             --coverageReporters=lcov \

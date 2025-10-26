@@ -17,6 +17,20 @@ const config: Config = {
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
     },
+    // Collect coverage from all relevant files
+    collectCoverageFrom: [
+        'app/**/*.{js,jsx,ts,tsx}',
+        'components/**/*.{js,jsx,ts,tsx}',
+        'lib/**/*.{js,jsx,ts,tsx}',
+        'hooks/**/*.{js,jsx,ts,tsx}',
+        '!**/*.d.ts',
+        '!**/node_modules/**',
+        '!**/.next/**',
+        '!**/.turbo/**',
+        '!**/coverage/**',
+        '!**/jest.config.ts',
+        '!**/jest.setup.ts',
+    ],
     reporters: [
         'default',
         [
