@@ -1,9 +1,14 @@
 import { createAuthClient } from "better-auth/react";
+import { customSessionClient } from "better-auth/client/plugins";
+import type { auth } from "./auth.server";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  plugins: [
+    customSessionClient<typeof auth>(),
+  ],
 });
 
 // Exporta os métodos do Better Auth

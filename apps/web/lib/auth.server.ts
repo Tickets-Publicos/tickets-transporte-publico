@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { customSession } from "better-auth/plugins";
 import jwt from "jsonwebtoken";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -11,6 +12,7 @@ interface UserInfo {
   image?: string;
   provider?: string;
   providerId?: string;
+  role?: string;
 }
 
 interface SessionInfo {
@@ -18,45 +20,32 @@ interface SessionInfo {
     id: string;
     email: string;
     name: string;
-    role?: string;
+    role?: string | null;
   };
-}
-
-// Função para buscar a role do usuário no backend
-async function getUserRole(email: string): Promise<string> {
-  try {
-    const response = await fetch(`${API_URL}/users/email/${encodeURIComponent(email)}`, {
-      headers: {
-        "X-Auth-Secret": JWT_SECRET,
-      },
-    });
-    
-    if (!response.ok) {
-      return "PEDESTRIAN"; // Role padrão
-    }
-    
-    const user = await response.json();
-    return user.role || "PEDESTRIAN";
-  } catch (error) {
-    console.error("Error fetching user role:", error);
-    return "PEDESTRIAN"; // Role padrão em caso de erro
-  }
+  session?: {
+    token: string;
+    expiresAt: Date;
+  };
 }
 
 export const auth = betterAuth({
   secret: JWT_SECRET,
   
-  // Configuração de sessão baseada em JWT (sem banco de dados)
+  // Configuração de sessão baseada em cookies (sem banco de dados)
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 dias
     updateAge: 60 * 60 * 24, // 1 dia
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60 // Cache de 5 minutos no cookie
+    }
   },
   
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ],
   
-  // OAuth Providers (seguindo a documentação oficial)
+  // OAuth Providers
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -72,6 +61,34 @@ export const auth = betterAuth({
     },
   },
   
+  // Plugin customSession para adicionar dados do backend à sessão
+  plugins: [
+    customSession(async ({ user, session }) => {
+      // Busca o usuário do backend para garantir que temos o ID correto
+      try {
+        const backendUser = await notifyBackendNewUser({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image || undefined,
+        });
+        
+        return {
+          user: {
+            ...user,
+            id: backendUser.id, // USA O ID DO BACKEND!
+            role: backendUser.role || "PEDESTRIAN",
+          },
+          session,
+        };
+      } catch (error) {
+        console.error("[customSession] Error syncing with backend:", error);
+        // Em caso de erro, retorna o usuário sem modificações
+        return { user, session };
+      }
+    }),
+  ],
+  
   // Callback após autenticação bem-sucedida
   callbacks: {
     async onSignIn(user: UserInfo) {
@@ -83,13 +100,29 @@ export const auth = betterAuth({
       });
       
       // Notifica o backend Java para criar/atualizar o usuário
+      // O backend retorna o usuário COM TODOS OS DADOS (ID, ROLE, etc)
       try {
         console.log("[Auth] Calling notifyBackendNewUser...");
-        const result = await notifyBackendNewUser(user);
-        console.log("[Auth] SUCCESS - User synced successfully:", result);
+        const backendUser = await notifyBackendNewUser(user);
+        console.log("[Auth] SUCCESS - User synced successfully:", backendUser);
+        
+        // IMPORTANTE: Retorna o ID do backend Java, não o do Better Auth
+        // Isso garante que o usuário terá o mesmo ID em todo o sistema
+        return {
+          user: {
+            id: backendUser.id, // USA O ID DO BACKEND JAVA!
+            email: backendUser.email,
+            name: backendUser.name,
+            image: user.image,
+            role: backendUser.role || "PEDESTRIAN",
+            createdAt: new Date(backendUser.createdAt),
+            updatedAt: new Date(backendUser.updatedAt),
+          },
+        };
       } catch (error) {
         console.error("[Auth] ERROR - Error notifying backend about new user:", error);
-        // Não bloqueia o login se o backend falhar
+        // Se falhar, não permite o login
+        throw error;
       }
     },
   },
@@ -148,15 +181,12 @@ async function notifyBackendNewUser(user: UserInfo) {
 
 // Função para gerar um JWT que o backend Java pode validar
 export async function generateBackendToken(session: SessionInfo) {
-  // Busca a role do usuário no backend
-  const role = await getUserRole(session.user.email);
-  
   return jwt.sign(
     {
       userId: session.user.id,
       email: session.user.email,
       name: session.user.name,
-      role: role,
+      role: session.user.role || "PEDESTRIAN",
       iat: Math.floor(Date.now() / 1000),
     },
     JWT_SECRET,

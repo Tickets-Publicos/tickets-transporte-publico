@@ -2,47 +2,33 @@
 "use client";
 
 import { useSession, signOut as betterAuthSignOut, clearTokenCache } from "@/lib/auth.client";
-import { usersApi } from "@/lib/api/users";
-import { useEffect, useState } from "react";
 import type { User } from "@/lib/api/types";
+import { UserRole } from "@/lib/api/types";
+
+// Tipo do usuário do Better Auth incluindo o role customizado
+interface BetterAuthUser {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  role?: string;
+}
 
 export function useAuth() {
   const { data: session, isPending } = useSession();
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (!session?.user) {
-        console.log("[useAuth] No session, user set to null");
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("[useAuth] Session found:", session.user.email);
-
-      try {
-        // Busca os dados completos do usuário do backend (incluindo role)
-        console.log("[useAuth] Fetching user from backend...");
-        const backendUser = await usersApi.findByEmail(session.user.email);
-        console.log("[useAuth] Backend user loaded:", backendUser);
-        setUser(backendUser);
-      } catch (error) {
-        console.error("[useAuth] Error loading user data:", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (!isPending) {
-      console.log("[useAuth] Not pending, loading user data...");
-      loadUserData();
-    } else {
-      console.log("[useAuth] Session pending...");
-    }
-  }, [session, isPending]);
+  // Converte a sessão do Better Auth (que já tem TODOS os dados do backend)
+  // para o tipo User esperado pelos componentes
+  // O role vem do onSignIn callback que retorna os dados do backend
+  const user: User | null = session?.user ? {
+    id: session.user.id, // ID do backend Java!
+    email: session.user.email,
+    name: session.user.name,
+    role: ((session.user as BetterAuthUser).role || "PEDESTRIAN") as UserRole,
+    createdAt: session.user.createdAt.toISOString(),
+    updatedAt: session.user.updatedAt.toISOString(),
+  } : null;
 
   // Função de logout que limpa o cache do token
   const signOut = async () => {
@@ -52,7 +38,7 @@ export function useAuth() {
 
   return {
     user,
-    isLoading: isPending || isLoading,
+    isLoading: isPending,
     isAuthenticated: !!user,
     signOut,
   };

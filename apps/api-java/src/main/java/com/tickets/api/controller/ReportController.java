@@ -2,12 +2,15 @@ package com.tickets.api.controller;
 
 import com.tickets.api.annotation.RequireRole;
 import com.tickets.api.dto.common.PageResponseDto;
+import com.tickets.api.dto.report.ApproveReportDto;
 import com.tickets.api.dto.report.CreateReportDto;
+import com.tickets.api.dto.report.RejectReportDto;
 import com.tickets.api.dto.report.ReportResponseDto;
 import com.tickets.api.dto.report.UpdateStatusDto;
 import com.tickets.api.model.enums.ReportStatus;
 import com.tickets.api.model.enums.UserRole;
 import com.tickets.api.service.ReportService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -63,5 +66,45 @@ public class ReportController {
   public ResponseEntity<ReportResponseDto> updateStatus(@PathVariable String id,
       @Valid @RequestBody UpdateStatusDto dto) {
     return ResponseEntity.ok(reportService.updateStatus(id, dto));
+  }
+
+  /**
+   * Lista reportes pendentes de aprovação.
+   * Apenas administradores podem acessar.
+   */
+  @RequireRole({ UserRole.ADMIN })
+  @GetMapping("/pending-review")
+  public ResponseEntity<PageResponseDto<ReportResponseDto>> getPendingReports(
+      @RequestParam(value = "page", required = false) Integer page,
+      @RequestParam(value = "limit", required = false) Integer limit) {
+    return ResponseEntity.ok(reportService.findPendingReports(page, limit));
+  }
+
+  /**
+   * Aprova um reporte (muda o status).
+   * Apenas administradores podem aprovar.
+   */
+  @RequireRole({ UserRole.ADMIN })
+  @PostMapping("/{id}/approve")
+  public ResponseEntity<ReportResponseDto> approveReport(
+      @PathVariable String id,
+      @Valid @RequestBody ApproveReportDto dto,
+      HttpServletRequest request) {
+    String adminId = (String) request.getAttribute("userId");
+    return ResponseEntity.ok(reportService.approveReport(id, dto, adminId));
+  }
+
+  /**
+   * Rejeita um reporte (arquiva com motivo).
+   * Apenas administradores podem rejeitar.
+   */
+  @RequireRole({ UserRole.ADMIN })
+  @PostMapping("/{id}/reject")
+  public ResponseEntity<ReportResponseDto> rejectReport(
+      @PathVariable String id,
+      @Valid @RequestBody RejectReportDto dto,
+      HttpServletRequest request) {
+    String adminId = (String) request.getAttribute("userId");
+    return ResponseEntity.ok(reportService.rejectReport(id, dto, adminId));
   }
 }

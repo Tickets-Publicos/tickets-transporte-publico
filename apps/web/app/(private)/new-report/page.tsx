@@ -18,6 +18,7 @@ export default function NewReportPage() {
   if (!user) {
     return null;
   }
+  console.log('Page New report form ',user)
 
   return <NewReportForm user={user} />;
 }

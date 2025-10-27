@@ -16,7 +16,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Sincroniza o usuário no backend se ainda não existir
-    await syncUserToBackend(session.user);
+    await syncUserToBackend({
+      ...session.user,
+      image: session.user.image || undefined,
+      role: session.user.role || "PEDESTRIAN",
+    });
 
     // Gera um JWT que o backend Java pode validar
     const token = await generateBackendToken(session);
