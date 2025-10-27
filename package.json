@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "dotenv -e .env -- turbo run build",
-    "dev": "dotenv -e .env -- turbo run dev",
+    "dev": "dotenv -e .env -- turbo run --ui=stream dev",
     "lint": "dotenv -e .env -- turbo run lint",
     "test": "dotenv -e .env -- turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

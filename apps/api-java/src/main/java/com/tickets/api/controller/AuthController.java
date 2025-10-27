@@ -32,12 +32,19 @@ public class AuthController {
       @RequestHeader("X-Auth-Secret") String authSecret,
       @RequestBody UserSyncRequest request) {
 
+    System.out.println("[AuthController] sync-user called");
+    System.out.println("[AuthController] Request: " + request);
+    System.out.println("[AuthController] Expected secret: " + jwtSecret);
+    System.out.println("[AuthController] Received secret: " + authSecret);
+
     // Valida que a requisição veio do Next.js
     if (!jwtSecret.equals(authSecret)) {
+      System.out.println("[AuthController] ERROR - Secret mismatch - Forbidden");
       return ResponseEntity.status(403).body("Forbidden");
     }
 
     try {
+      System.out.println("[AuthController] Calling userService.syncOAuthUser...");
       var user = userService.syncOAuthUser(
           request.getId(),
           request.getEmail(),
@@ -46,8 +53,11 @@ public class AuthController {
           request.getProvider(),
           request.getProviderId());
 
+      System.out.println("[AuthController] SUCCESS - User synced successfully: " + user);
       return ResponseEntity.ok(user);
     } catch (Exception e) {
+      System.err.println("[AuthController] ERROR - Error syncing user: " + e.getMessage());
+      e.printStackTrace();
       return ResponseEntity.status(500)
           .body("Error syncing user: " + e.getMessage());
     }

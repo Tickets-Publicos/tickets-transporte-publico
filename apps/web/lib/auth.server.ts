@@ -1,8 +1,8 @@
 import { betterAuth } from "better-auth";
 import jwt from "jsonwebtoken";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-const JWT_SECRET = process.env.AUTH_SECRET || "your-secret-key-change-in-production";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const JWT_SECRET = process.env.AUTH_SECRET || process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 interface UserInfo {
   id: string;
@@ -25,7 +25,7 @@ interface SessionInfo {
 // Função para buscar a role do usuário no backend
 async function getUserRole(email: string): Promise<string> {
   try {
-    const response = await fetch(`${API_URL}/users/by-email/${encodeURIComponent(email)}`, {
+    const response = await fetch(`${API_URL}/users/email/${encodeURIComponent(email)}`, {
       headers: {
         "X-Auth-Secret": JWT_SECRET,
       },
@@ -78,11 +78,20 @@ export const auth = betterAuth({
   // Callback após autenticação bem-sucedida
   callbacks: {
     async onSignIn(user: UserInfo) {
+      console.log("[Auth] onSignIn callback triggered for user:", {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        provider: user.provider,
+      });
+      
       // Notifica o backend Java para criar/atualizar o usuário
       try {
-        await notifyBackendNewUser(user);
+        console.log("[Auth] Calling notifyBackendNewUser...");
+        const result = await notifyBackendNewUser(user);
+        console.log("[Auth] SUCCESS - User synced successfully:", result);
       } catch (error) {
-        console.error("Error notifying backend about new user:", error);
+        console.error("[Auth] ERROR - Error notifying backend about new user:", error);
         // Não bloqueia o login se o backend falhar
       }
     },
@@ -93,31 +102,49 @@ export type Session = typeof auth.$Infer.Session;
 
 // Função para notificar o backend Java sobre novo usuário
 async function notifyBackendNewUser(user: UserInfo) {
+  console.log("[Auth] notifyBackendNewUser called with:", {
+    apiUrl: API_URL,
+    userId: user.id,
+    userEmail: user.email,
+  });
+  
   try {
-    const response = await fetch(`${API_URL}/auth/sync-user`, {
+    const url = `${API_URL}/auth/sync-user`;
+    const payload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      image: user.image,
+      provider: user.provider,
+      providerId: user.providerId,
+    };
+    
+    console.log("[Auth] Sending POST to:", url);
+    console.log("[Auth] Payload:", payload);
+    
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         // Token assinado pelo Next.js que o backend pode validar
         "X-Auth-Secret": JWT_SECRET,
       },
-      body: JSON.stringify({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.image,
-        provider: user.provider,
-        providerId: user.providerId,
-      }),
+      body: JSON.stringify(payload),
     });
     
+    console.log("[Auth] Backend response status:", response.status);
+    
     if (!response.ok) {
-      throw new Error(`Backend responded with ${response.status}`);
+      const errorText = await response.text();
+      console.error("[Auth] ERROR - Backend error response:", errorText);
+      throw new Error(`Backend responded with ${response.status}: ${errorText}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log("[Auth] SUCCESS - Backend response body:", result);
+    return result;
   } catch (error) {
-    console.error("Error notifying backend:", error);
+    console.error("[Auth] ERROR - Error in notifyBackendNewUser:", error);
     throw error;
   }
 }
@@ -142,4 +169,16 @@ export async function generateBackendToken(session: SessionInfo) {
       audience: "tickets-backend",
     }
   );
+}
+
+// Função exportada para sincronizar usuário no backend
+// O backend Java decide se cria ou atualiza o usuário
+export async function syncUserToBackend(user: UserInfo): Promise<void> {
+  try {
+    console.log("[Auth] Sincronizando usuário com backend:", user.email);
+    await notifyBackendNewUser(user);
+  } catch (error) {
+    console.error("[Auth] Erro ao sincronizar usuário:", error);
+    // Não lança erro para não bloquear a geração do token
+  }
 }

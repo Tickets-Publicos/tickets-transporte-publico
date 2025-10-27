@@ -1,4 +1,4 @@
-import { auth, generateBackendToken } from "@/lib/auth.server";
+import { auth, generateBackendToken, syncUserToBackend } from "@/lib/auth.server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -14,6 +14,9 @@ export async function GET(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Sincroniza o usuário no backend se ainda não existir
+    await syncUserToBackend(session.user);
 
     // Gera um JWT que o backend Java pode validar
     const token = await generateBackendToken(session);

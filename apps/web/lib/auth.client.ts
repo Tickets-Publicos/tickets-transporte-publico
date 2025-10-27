@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
@@ -9,24 +9,46 @@ export const authClient = createAuthClient({
 // Exporta os métodos do Better Auth
 export const { signIn, signUp, signOut, useSession } = authClient;
 
-// Helper para obter o token JWT da sessão atual
+// Cache do token em memória
+let cachedToken: string | null = null;
+let tokenExpiry: number = 0;
+
+// Helper para obter o token JWT da sessão atual (com cache)
 export async function getBackendToken(): Promise<string | null> {
   try {
+    // Verifica se há um token em cache válido
+    if (cachedToken && Date.now() < tokenExpiry) {
+      return cachedToken;
+    }
+
     // Solicita um token JWT ao servidor Next.js que pode ser validado pelo backend Java
     const response = await fetch("/api/auth/token", {
       credentials: "include",
     });
     
     if (!response.ok) {
+      cachedToken = null;
       return null;
     }
     
     const data = await response.json();
+    
+    // Armazena em cache por 6 dias (token expira em 7)
+    cachedToken = data.token;
+    tokenExpiry = Date.now() + (6 * 24 * 60 * 60 * 1000);
+    
     return data.token;
   } catch (error) {
     console.error("Error getting backend token:", error);
+    cachedToken = null;
     return null;
   }
+}
+
+// Limpa o cache do token
+export function clearTokenCache() {
+  cachedToken = null;
+  tokenExpiry = 0;
 }
 
 // Helper para fazer chamadas autenticadas ao backend Java

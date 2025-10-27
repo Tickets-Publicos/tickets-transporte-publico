@@ -103,10 +103,16 @@ public class UserService {
       String image,
       String provider,
       String providerId) {
+    System.out.println("[UserService] syncOAuthUser called");
+    System.out.println("[UserService] Email: " + email);
+    System.out.println("[UserService] Name: " + name);
+    System.out.println("[UserService] Provider: " + provider);
+    
     // Busca usuário por email
     User user = userRepository.findByEmail(email).orElse(null);
 
     if (user == null) {
+      System.out.println("[UserService] User not found, creating new user");
       // Cria novo usuário
       user = User.builder()
           .email(email)
@@ -114,11 +120,14 @@ public class UserService {
           .role(UserRole.PEDESTRIAN) // Role padrão para usuários OAuth
           .build();
     } else {
+      System.out.println("[UserService] User found, updating information");
       // Atualiza informações do usuário existente
       user.setName(name);
     }
 
+    System.out.println("[UserService] Saving user to database...");
     User savedUser = userRepository.save(user);
+    System.out.println("[UserService] SUCCESS - User saved successfully: " + savedUser.getId());
     return mapToDto(savedUser);
   }
 

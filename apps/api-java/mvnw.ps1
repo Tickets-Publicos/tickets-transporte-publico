@@ -4,6 +4,11 @@
 
 $ErrorActionPreference = "Stop"
 
+# Force UTF-8 encoding for console output
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$env:JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF-8 -Dconsole.encoding=UTF-8"
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 # Detect JAVA_HOME if not set
 if (-not $env:JAVA_HOME) {
     # Try to find Java installation

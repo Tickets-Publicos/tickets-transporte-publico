@@ -1,5 +1,7 @@
 // tickets-transporte-publico/apps/web/lib/api/config.ts
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+import { getBackendToken } from '../auth.client'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 export const apiConfig = {
   baseURL: API_BASE_URL,
@@ -39,10 +41,14 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const url = `${apiConfig.baseURL}${endpoint}`
   
+  // Obtém o token JWT para autenticação
+  const token = await getBackendToken()
+  
   const config: RequestInit = {
     ...options,
     headers: {
       ...apiConfig.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   }

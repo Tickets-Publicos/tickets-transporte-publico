@@ -11,19 +11,33 @@ import { Plus, BarChart3, List } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Só redireciona se terminou de carregar E não está autenticado
+    if (!isLoading && !isAuthenticated) {
       router.push("/");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
 
   const handleNewReport = () => {
     router.push("/new-report");
   };
 
+  // Mostra loading enquanto está verificando autenticação
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se não autenticado após carregar, não renderiza nada (vai redirecionar)
   if (!isAuthenticated || !user) {
     return null;
   }
