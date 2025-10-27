@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { customSession } from "better-auth/plugins";
 import jwt from "jsonwebtoken";
 
@@ -28,9 +28,10 @@ interface SessionInfo {
   };
 }
 
-export const auth = betterAuth({
+// Configuração base do Better Auth
+const options = {
   secret: JWT_SECRET,
-  
+
   // Configuração de sessão baseada em cookies (sem banco de dados)
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 dias
@@ -40,11 +41,11 @@ export const auth = betterAuth({
       maxAge: 5 * 60 // Cache de 5 minutos no cookie
     }
   },
-  
+
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ],
-  
+
   // OAuth Providers
   socialProviders: {
     google: {
@@ -60,11 +61,14 @@ export const auth = betterAuth({
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
     },
   },
-  
-  // Plugin customSession para adicionar dados do backend à sessão
+} satisfies BetterAuthOptions;
+
+export const auth = betterAuth({
+  ...options,
   plugins: [
+    // Plugin customSession para adicionar role à sessão
     customSession(async ({ user, session }) => {
-      // Busca o usuário do backend para garantir que temos o ID correto
+      // Busca o usuário do backend para garantir que temos o ID e role corretos
       try {
         const backendUser = await notifyBackendNewUser({
           id: user.id,
@@ -72,7 +76,7 @@ export const auth = betterAuth({
           name: user.name,
           image: user.image || undefined,
         });
-        
+
         return {
           user: {
             ...user,
@@ -84,11 +88,16 @@ export const auth = betterAuth({
       } catch (error) {
         console.error("[customSession] Error syncing with backend:", error);
         // Em caso de erro, retorna o usuário sem modificações
-        return { user, session };
+        return {
+          user: {
+            ...user,
+            role: "PEDESTRIAN",
+          },
+          session
+        };
       }
-    }),
+    }, options), // Passa options para inferência de tipos correta
   ],
-  
   // Callback após autenticação bem-sucedida
   callbacks: {
     async onSignIn(user: UserInfo) {
@@ -98,14 +107,14 @@ export const auth = betterAuth({
         name: user.name,
         provider: user.provider,
       });
-      
+
       // Notifica o backend Java para criar/atualizar o usuário
       // O backend retorna o usuário COM TODOS OS DADOS (ID, ROLE, etc)
       try {
         console.log("[Auth] Calling notifyBackendNewUser...");
         const backendUser = await notifyBackendNewUser(user);
         console.log("[Auth] SUCCESS - User synced successfully:", backendUser);
-        
+
         // IMPORTANTE: Retorna o ID do backend Java, não o do Better Auth
         // Isso garante que o usuário terá o mesmo ID em todo o sistema
         return {
@@ -137,7 +146,7 @@ async function notifyBackendNewUser(user: UserInfo) {
     userId: user.id,
     userEmail: user.email,
   });
-  
+
   try {
     const url = `${API_URL}/auth/sync-user`;
     const payload = {
@@ -148,10 +157,10 @@ async function notifyBackendNewUser(user: UserInfo) {
       provider: user.provider,
       providerId: user.providerId,
     };
-    
+
     console.log("[Auth] Sending POST to:", url);
     console.log("[Auth] Payload:", payload);
-    
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -161,15 +170,15 @@ async function notifyBackendNewUser(user: UserInfo) {
       },
       body: JSON.stringify(payload),
     });
-    
+
     console.log("[Auth] Backend response status:", response.status);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[Auth] ERROR - Backend error response:", errorText);
       throw new Error(`Backend responded with ${response.status}: ${errorText}`);
     }
-    
+
     const result = await response.json();
     console.log("[Auth] SUCCESS - Backend response body:", result);
     return result;
