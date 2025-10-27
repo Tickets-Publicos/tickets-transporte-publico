@@ -18,6 +18,8 @@ Deve mostrar **Java 25** (ou superior).
 
 ### 2. Configurar JAVA_HOME
 
+curl -s "https://get.sdkman.io" | bash && source "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install java {candidate_id}
+
 #### Windows (PowerShell)
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-25.0.0.36-hotspot"

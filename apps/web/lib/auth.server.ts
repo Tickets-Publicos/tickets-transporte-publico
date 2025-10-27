@@ -56,22 +56,19 @@ export const auth = betterAuth({
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ],
   
-  // OAuth Providers
+  // OAuth Providers (seguindo a documentação oficial)
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      enabled: !!process.env.GOOGLE_CLIENT_ID,
     },
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      enabled: !!process.env.GITHUB_CLIENT_ID,
     },
     microsoft: {
       clientId: process.env.MICROSOFT_CLIENT_ID!,
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
-      enabled: !!process.env.MICROSOFT_CLIENT_ID,
     },
   },
   
