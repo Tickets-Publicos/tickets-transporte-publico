@@ -15,44 +15,79 @@ Sistema para reportar e gerenciar problemas de transporte público, desenvolvido
 
 ### Deploy Automático com GitHub Actions
 
-Este projeto utiliza **GitHub Actions** para CI/CD (Continuous Integration / Continuous Deployment).
+Este projeto utiliza **GitHub Actions** para CI/CD com deploy em produção via SSH.
 
 **O que acontece automaticamente:**
+
 - ✅ **Pull Requests**: Roda testes e valida o código
-- ✅ **Push na `main`**: Testa + Deploy automático na EC2
+- ✅ **Push na `main`**: Testa, builda e publica imagens Docker
+- ✅ **Deploy Manual**: Workflow disparável para deploy em produção
 
-**Documentação completa:**
-- 📖 **[DEPLOY_EC2.md](./DEPLOY_EC2.md)** - Guia completo de deploy na AWS EC2
-  - Deploy manual passo a passo
-  - Script de setup automatizado
-  - Configuração de CI/CD com GitHub Actions
-  - Explicação didática sobre CI/CD e GitHub Actions
-  - Comparação GitHub Actions vs Jenkins
-  - Troubleshooting e comandos úteis
+**Características do Sistema de Deploy:**
 
-### Quick Start - Deploy na EC2
+- 🔄 **Zero Downtime**: Rolling updates com réplicas
+- 📝 **Logging Completo**: Todas operações registradas em `deploy.log`
+- 🐳 **Docker Compose**: Orquestração simplificada
+- 🔒 **Seguro**: Variáveis de ambiente via GitHub Secrets
+- 📊 **Health Checks**: Verificação automática de saúde dos serviços
 
-**Opção 1: Setup Automatizado (Recomendado)**
+### 📖 Documentação de Deploy
+
+**[docs/DEPLOY.md](./docs/DEPLOY.md)** - Guia completo:
+
+- Quick start e configuração inicial
+- Processo de deploy com zero downtime
+- Comandos úteis e troubleshooting
+- Segurança e boas práticas
+
+### 🚀 Quick Start - Deploy em Produção
+
+**1. Setup do Servidor (Uma Única Vez)**
 
 ```bash
-# Na sua instância EC2
-git clone https://github.com/vinicius-cappatti/tickets-transporte-publico.git
-cd tickets-transporte-publico
-chmod +x scripts/setup-ec2.sh
-./scripts/setup-ec2.sh
+# No servidor de produção
+sudo bash setup-server.sh
 ```
 
-**Opção 2: Deploy Manual**
+Este script irá:
 
-Veja o guia completo em [DEPLOY_EC2.md](./DEPLOY_EC2.md)
+- ✅ Instalar Docker e dependências
+- ✅ Criar usuário `cicdbot`
+- ✅ Configurar SSH e firewall
+- ✅ Preparar estrutura de diretórios
+
+**2. Configurar Secrets no GitHub**
+
+Acesse: `Settings > Secrets and variables > Actions`
+
+| Secret           | Descrição                     |
+| ---------------- | ----------------------------- |
+| `DEPLOY_SSH_KEY` | Chave privada SSH do servidor |
+| `DEPLOY_HOST`    | IP ou hostname do servidor    |
+| `DEPLOY_USER`    | `cicdbot`                     |
+| `ENV_PRODUCTION` | Conteúdo completo do `.env`   |
+
+**3. Executar Deploy**
+
+1. Acesse: `Actions > CI/CD Pipeline`
+2. Clique: `Run workflow`
+3. Marque: ☑️ **Deploy to production**
+4. Clique: `Run workflow`
+
+### 🛠️ Scripts Disponíveis
+
+| Script                    | Descrição                             |
+| ------------------------- | ------------------------------------- |
+| `scripts/setup-server.sh` | Setup inicial do servidor de produção |
+| `scripts/deploy.sh`       | Script de deploy (executado na VM)    |
 
 ### Arquivos Importantes de Deploy
 
-- `.github/workflows/ci-cd.yml` - Pipeline de CI/CD
-- `.github/workflows/pr-preview.yml` - Validação de Pull Requests
+- `.github/workflows/ci-cd.yml` - Pipeline completo de CI/CD
 - `docker-compose.prod.yml` - Configuração de produção
-- `.env.production.example` - Template de variáveis de ambiente
-- `nginx/nginx.conf` - Configuração do reverse proxy
+- `.env.production.example` - Exemplo de variáveis de ambiente
+- `scripts/setup-server.sh` - Setup automatizado do servidor
+- `scripts/deploy.sh` - Script de deploy na VM
 
 ---
 
@@ -159,6 +194,7 @@ Veja [CONTRIBUTING.md](./CONTRIBUTING.md) para guidelines de contribuição.
 5. Abra um Pull Request
 
 **Pull Requests** disparam automaticamente:
+
 - Testes e validações
 - Comentário automático com status do build
 - Review automatizado
@@ -173,9 +209,9 @@ Veja [CONTRIBUTING.md](./CONTRIBUTING.md) para guidelines de contribuição.
 
 - Java instalado (necessário para rodar o PlantUML)
 - Compilador LaTeX com suporte a TikZ e XeLaTeX:
-	```bash
-	sudo apt-get update && sudo apt-get install -y texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-lang-portuguese texlive-xetex
-	```
+  ```bash
+  sudo apt-get update && sudo apt-get install -y texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-lang-portuguese texlive-xetex
+  ```
 - O arquivo `plantuml.jar` está em `wiki/bin/plantuml.jar`
 - Os arquivos `.puml` dos diagramas estão em `wiki/uml/`
 
@@ -209,6 +245,7 @@ E para inserir o diagrama no local desejado:
 ```
 
 ### Observações
+
 - Sempre gere novamente o `.tex` se alterar o `.puml`.
 - O comando `-tlatex:nopreamble` gera apenas o ambiente TikZ, pronto para ser incluído em qualquer documento LaTeX.
 - O compilador recomendado é o `pdflatex`.
@@ -221,8 +258,8 @@ A extensão "LaTeX Workshop" para Visual Studio Code facilita editar, compilar e
 
 - A única exigência é uma distribuição LaTeX compatível disponível no PATH do sistema. Exemplo recomendado: TeX Live.
 - Alternativas possíveis:
-	- TinyTeX — uma distribuição leve baseada em TeX Live.
-	- MiKTeX — distribuição leve com instalação automática de pacotes. Observação: para que o MiKTeX funcione corretamente com LaTeX Workshop, pode ser necessário ter o Perl instalado no sistema.
+  - TinyTeX — uma distribuição leve baseada em TeX Live.
+  - MiKTeX — distribuição leve com instalação automática de pacotes. Observação: para que o MiKTeX funcione corretamente com LaTeX Workshop, pode ser necessário ter o Perl instalado no sistema.
 
 Ferramentas úteis (opcionais):
 
@@ -290,7 +327,7 @@ curl -sL "https://yihui.org/tinytex/install-bin-unix.sh" | sh
 which pdflatex
 ```
 
-Se necessário, adicione o diretório de binários do TinyTeX ao PATH (o instalador normalmente adiciona em ~/.TinyTeX/bin/*).
+Se necessário, adicione o diretório de binários do TinyTeX ao PATH (o instalador normalmente adiciona em ~/.TinyTeX/bin/\*).
 
 TeX Live (completo)
 
@@ -326,7 +363,6 @@ pdflatex --version
 - Após instalar qualquer distribuição, confirme que `pdflatex`, `latexmk` (se usado) e outros binários estão acessíveis no PATH do terminal que abre o VS Code.
 - Se usar Remote - SSH ou Remote - Containers, certifique-se de que o PATH esteja definido em `~/.profile` ou `~/.bash_profile` para que o VS Code remoto herde-o.
 - Como alternativa, defina `env` nas receitas do LaTeX Workshop para apontar diretamente para os executáveis.
-
 
 ### Instalação
 
@@ -410,7 +446,6 @@ Você precisa escolher uma imagem Docker adequada que contenha uma distribuiçã
 
 ### Links e documentação
 
-
 - Documentação oficial da extensão LaTeX Workshop: [https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)
 - Documentação do projeto (GitHub): [https://github.com/James-Yu/LaTeX-Workshop](https://github.com/James-Yu/LaTeX-Workshop)
 
@@ -449,4 +484,3 @@ Após a instalação, confirme com:
 ```bash
 pdflatex --version
 ```
-
