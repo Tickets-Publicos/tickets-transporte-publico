@@ -1,56 +1,53 @@
 import React from 'react'
 import '@testing-library/jest-dom'
 import { render, screen, fireEvent } from '@testing-library/react'
-
 import { Header } from './header'
 
+// Mock the useAuth hook
+const mockSignOut = jest.fn()
+const mockUseAuth = jest.fn()
+
+jest.mock('@/hooks/use-auth', () => ({
+  useAuth: () => mockUseAuth(),
+}))
+
 describe('Header', () => {
-  it('mostra título e botão Entrar chama callback', () => {
+  beforeEach(() => {
+    mockSignOut.mockClear()
+    mockUseAuth.mockClear()
+  })
+
+  it('mostra título e botão Entrar quando usuário não está autenticado', () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+      signOut: mockSignOut,
+    })
+
     const onLoginClick = jest.fn()
     render(<Header onLoginClick={onLoginClick} />)
 
     expect(screen.getByText(/Acessibilidade SP/i)).toBeInTheDocument()
+    expect(screen.getByText(/Sistema de Reportes/i)).toBeInTheDocument()
 
     const loginButton = screen.getByRole('button', { name: /Entrar/i })
     fireEvent.click(loginButton)
 
-    expect(onLoginClick).toHaveBeenCalled()
+    expect(onLoginClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('mostra UserMenu quando usuário está autenticado', () => {
+    const mockUser = { id: '1', name: 'Usuário Teste', email: 'teste@exemplo.com' }
+    mockUseAuth.mockReturnValue({
+      user: mockUser,
+      isAuthenticated: true,
+      signOut: mockSignOut,
+    })
+
+    const onLoginClick = jest.fn()
+    render(<Header onLoginClick={onLoginClick} />)
+
+    expect(screen.getByText(/Acessibilidade SP/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Entrar/i })).not.toBeInTheDocument()
   })
 })
-  // We'll mock auth functions to simulate logged-in state
-  type TestUser = { id: string; name: string } | null
-  const mockGetCurrentUser = jest.fn<TestUser, []>(() => null)
-  const mockInitializeAuth = jest.fn()
-  jest.mock('@/lib/auth', () => ({
-    getCurrentUser: () => mockGetCurrentUser(),
-    initializeAuth: () => mockInitializeAuth(),
-  }))
-
-  describe('Header', () => {
-    beforeEach(() => {
-      mockGetCurrentUser.mockClear()
-      mockInitializeAuth.mockClear()
-    })
-
-    it('mostra título e botão Entrar chama callback', () => {
-      const onLoginClick = jest.fn()
-      render(<Header onLoginClick={onLoginClick} />)
-
-      expect(screen.getByText(/Acessibilidade SP/i)).toBeInTheDocument()
-
-      const loginButton = screen.getByRole('button', { name: /Entrar/i })
-      fireEvent.click(loginButton)
-
-      expect(onLoginClick).toHaveBeenCalled()
-    })
-
-    it('não mostra botão Entrar quando usuário está logado', () => {
-      mockGetCurrentUser.mockImplementation(() => ({ id: '1', name: 'Usuário Teste' }))
-
-      const onLoginClick = jest.fn()
-      render(<Header onLoginClick={onLoginClick} />)
-
-      expect(screen.queryByRole('button', { name: /Entrar/i })).toBeNull()
-      expect(screen.getByText(/Acessibilidade SP/i)).toBeInTheDocument()
-    })
-  })

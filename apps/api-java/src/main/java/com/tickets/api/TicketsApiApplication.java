@@ -2,6 +2,8 @@ package com.tickets.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
@@ -9,8 +11,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class TicketsApiApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TicketsApiApplication.class, args);
-        System.out.println("🚀 API rodando em http://localhost:" + 
-            System.getProperty("server.port", "3000"));
+        ConfigurableApplicationContext context = SpringApplication.run(TicketsApiApplication.class, args);
+        Environment env = context.getEnvironment();
+        String port = env.getProperty("server.port", "3000");
+        System.out.println("[INFO] API rodando em http://localhost:" + port);
     }
 }

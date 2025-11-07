@@ -1,16 +1,52 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MapPin, Navigation } from "lucide-react"
-import { getLocationTypeName, type Location } from "@/lib/locations"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Navigation } from "lucide-react";
+import type { Location } from "@/lib/api/types";
 
 interface LocationMapProps {
-  location: Location | null
-  className?: string
+  location: Location | null;
+  className?: string;
 }
 
 export function LocationMap({ location, className }: LocationMapProps) {
+  const getLocationTypeName = (type: string) => {
+    switch (type) {
+      case "bus_stop":
+        return "Ponto de Ônibus";
+      case "train":
+        return "Estação de Trem";
+      case "subway":
+        return "Estação de Metrô";
+      case "terminal":
+        return "Terminal";
+      default:
+        return "Outros";
+    }
+  };
+
+  const getLocationTypeColor = (type: string) => {
+    switch (type) {
+      case "bus_stop":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "train":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "subway":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+      case "terminal":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
   if (!location) {
     return (
       <Card className={className}>
@@ -19,7 +55,9 @@ export function LocationMap({ location, className }: LocationMapProps) {
             <MapPin className="h-5 w-5" />
             Localização
           </CardTitle>
-          <CardDescription>Selecione um local para ver sua localização no mapa</CardDescription>
+          <CardDescription>
+            Selecione um local para ver sua localização no mapa
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
@@ -30,24 +68,8 @@ export function LocationMap({ location, className }: LocationMapProps) {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
-
-  const getLocationTypeColor = (typeId: number) => {
-    switch (typeId) {
-      case 1: // Bus stop
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-      case 2: // Train station
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-      case 3: // Metro station
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
-    }
-  }
-
-  // Generate a simple map placeholder with location info
-  const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${location.latitude},${location.longitude}&zoom=16&size=400x300&markers=color:red%7C${location.latitude},${location.longitude}&key=YOUR_API_KEY`
 
   return (
     <Card className={className}>
@@ -56,15 +78,17 @@ export function LocationMap({ location, className }: LocationMapProps) {
           <MapPin className="h-5 w-5" />
           Localização Selecionada
         </CardTitle>
-        <CardDescription>Confirme se este é o local correto para seu reporte</CardDescription>
+        <CardDescription>
+          Confirme se este é o local correto para seu reporte
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Location Info */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold">{location.name}</h3>
-            <Badge className={getLocationTypeColor(location.location_type_id)}>
-              {getLocationTypeName(location.location_type_id)}
+            <Badge className={getLocationTypeColor(location.type)}>
+              {getLocationTypeName(location.type)}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground flex items-center gap-1">
@@ -80,14 +104,17 @@ export function LocationMap({ location, className }: LocationMapProps) {
               <MapPin className="h-12 w-12 mx-auto mb-2 text-primary" />
               <p className="font-medium">{location.name}</p>
               <p className="text-sm text-muted-foreground">
-                Lat: {location.latitude.toFixed(4)}, Lng: {location.longitude.toFixed(4)}
+                Lat: {location.latitude.toFixed(4)}, Lng:{" "}
+                {location.longitude.toFixed(4)}
               </p>
             </div>
           </div>
 
           {/* Map overlay with location details */}
           <div className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm rounded-lg p-2 border">
-            <p className="text-xs font-medium">{getLocationTypeName(location.location_type_id)}</p>
+            <p className="text-xs font-medium">
+              {getLocationTypeName(location.type)}
+            </p>
           </div>
         </div>
 
@@ -104,5 +131,5 @@ export function LocationMap({ location, className }: LocationMapProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

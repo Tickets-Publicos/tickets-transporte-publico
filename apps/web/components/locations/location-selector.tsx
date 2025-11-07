@@ -1,60 +1,148 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, MapPin, Train, Bus } from "lucide-react"
-import { getLocationsByType, getLocationTypeName, searchLocations, type Location } from "@/lib/locations"
+import { useState, useMemo, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, MapPin, Train, Bus, Loader2 } from "lucide-react";
+import { locationsApi } from "@/lib/api/locations";
+import type { Location } from "@/lib/api/types";
 
 interface LocationSelectorProps {
-  selectedLocation: Location | null
-  onLocationSelect: (location: Location) => void
-  className?: string
+  selectedLocation: Location | null;
+  onLocationSelect: (location: Location) => void;
+  className?: string;
 }
 
-export function LocationSelector({ selectedLocation, onLocationSelect, className }: LocationSelectorProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState("all")
+export function LocationSelector({
+  selectedLocation,
+  onLocationSelect,
+  className,
+}: LocationSelectorProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await locationsApi.findAll();
+        setLocations(data);
+      } catch (err) {
+        console.error("Erro ao carregar locais:", err);
+        setError(
+          "Não foi possível carregar os locais. Tente novamente mais tarde."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   const filteredLocations = useMemo(() => {
-    let results = searchLocations(searchQuery)
+    let results = locations;
 
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      results = results.filter(
+        (location) =>
+          location.name.toLowerCase().includes(query) ||
+          location.address.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by tab
     if (activeTab !== "all") {
-      const typeId = Number.parseInt(activeTab)
-      results = results.filter((location) => location.location_type_id === typeId)
+      results = results.filter(
+        (location) => location.type.toLowerCase() === activeTab.toLowerCase()
+      );
     }
 
-    return results
-  }, [searchQuery, activeTab])
+    return results;
+  }, [locations, searchQuery, activeTab]);
 
-  const getLocationIcon = (typeId: number) => {
-    switch (typeId) {
-      case 1: // Bus stop
-        return <Bus className="h-4 w-4" />
-      case 2: // Train station
-        return <Train className="h-4 w-4" />
-      case 3: // Metro station
-        return <MapPin className="h-4 w-4" />
-      default:
-        return <MapPin className="h-4 w-4" />
-    }
+  const getLocationIcon = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes("bus")) return <Bus className="h-4 w-4" />;
+    if (lowerType.includes("train") || lowerType.includes("trem"))
+      return <Train className="h-4 w-4" />;
+    if (
+      lowerType.includes("subway") ||
+      lowerType.includes("metrô") ||
+      lowerType.includes("metro")
+    )
+      return <MapPin className="h-4 w-4" />;
+    return <MapPin className="h-4 w-4" />;
+  };
+
+  const getLocationTypeColor = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes("bus"))
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    if (lowerType.includes("train") || lowerType.includes("trem"))
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+    if (
+      lowerType.includes("subway") ||
+      lowerType.includes("metrô") ||
+      lowerType.includes("metro")
+    )
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+    return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+  };
+
+  const getLocationTypeName = (type: string): string => {
+    const typeMap: Record<string, string> = {
+      station: "Estação",
+      terminal: "Terminal",
+      bus_stop: "Ponto de Ônibus",
+      subway: "Metrô",
+      train: "Trem",
+    };
+    return typeMap[type.toLowerCase()] || type;
+  };
+
+  const locationsByType = useMemo(() => {
+    const stats: Record<string, number> = {};
+    locations.forEach((loc) => {
+      stats[loc.type] = (stats[loc.type] || 0) + 1;
+    });
+    return stats;
+  }, [locations]);
+
+  if (loading) {
+    return (
+      <Card className={className}>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
   }
 
-  const getLocationTypeColor = (typeId: number) => {
-    switch (typeId) {
-      case 1: // Bus stop
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-      case 2: // Train station
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-      case 3: // Metro station
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
-    }
+  if (error) {
+    return (
+      <Card className={className}>
+        <CardContent className="text-center py-12">
+          <p className="text-muted-foreground">{error}</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -65,7 +153,8 @@ export function LocationSelector({ selectedLocation, onLocationSelect, className
           Selecionar Local
         </CardTitle>
         <CardDescription>
-          Escolha o ponto de ônibus ou estação onde você identificou o problema de acessibilidade
+          Escolha o ponto de ônibus ou estação onde você identificou o problema
+          de acessibilidade
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -93,15 +182,15 @@ export function LocationSelector({ selectedLocation, onLocationSelect, className
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="all">Todos</TabsTrigger>
-            <TabsTrigger value="1" className="flex items-center gap-1">
+            <TabsTrigger value="bus_stop" className="flex items-center gap-1">
               <Bus className="h-3 w-3" />
               Ônibus
             </TabsTrigger>
-            <TabsTrigger value="2" className="flex items-center gap-1">
+            <TabsTrigger value="train" className="flex items-center gap-1">
               <Train className="h-3 w-3" />
               Trem
             </TabsTrigger>
-            <TabsTrigger value="3" className="flex items-center gap-1">
+            <TabsTrigger value="subway" className="flex items-center gap-1">
               <MapPin className="h-3 w-3" />
               Metrô
             </TabsTrigger>
@@ -113,14 +202,18 @@ export function LocationSelector({ selectedLocation, onLocationSelect, className
               <div className="mb-4 p-3 bg-accent rounded-lg border">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {getLocationIcon(selectedLocation.location_type_id)}
+                    {getLocationIcon(selectedLocation.type)}
                     <div>
                       <p className="font-medium">{selectedLocation.name}</p>
-                      <p className="text-sm text-muted-foreground">{selectedLocation.address}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedLocation.address}
+                      </p>
                     </div>
                   </div>
-                  <Badge className={getLocationTypeColor(selectedLocation.location_type_id)}>
-                    {getLocationTypeName(selectedLocation.location_type_id)}
+                  <Badge
+                    className={getLocationTypeColor(selectedLocation.type)}
+                  >
+                    {getLocationTypeName(selectedLocation.type)}
                   </Badge>
                 </div>
               </div>
@@ -138,23 +231,29 @@ export function LocationSelector({ selectedLocation, onLocationSelect, className
                 filteredLocations.map((location) => (
                   <Button
                     key={location.id}
-                    variant={selectedLocation?.id === location.id ? "default" : "outline"}
+                    variant={
+                      selectedLocation?.id === location.id
+                        ? "default"
+                        : "outline"
+                    }
                     className="w-full justify-start h-auto p-3"
                     onClick={() => onLocationSelect(location)}
                   >
                     <div className="flex items-center gap-3 w-full">
-                      {getLocationIcon(location.location_type_id)}
+                      {getLocationIcon(location.type)}
                       <div className="flex-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium">{location.name}</span>
                           <Badge
                             variant="secondary"
-                            className={`text-xs ${getLocationTypeColor(location.location_type_id)}`}
+                            className={`text-xs ${getLocationTypeColor(location.type)}`}
                           >
-                            {getLocationTypeName(location.location_type_id)}
+                            {getLocationTypeName(location.type)}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{location.address}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {location.address}
+                        </p>
                       </div>
                     </div>
                   </Button>
@@ -166,20 +265,18 @@ export function LocationSelector({ selectedLocation, onLocationSelect, className
 
         {/* Location Stats */}
         <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{getLocationsByType(1).length}</div>
-            <div className="text-xs text-muted-foreground">Pontos de Ônibus</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{getLocationsByType(2).length}</div>
-            <div className="text-xs text-muted-foreground">Estações de Trem</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{getLocationsByType(3).length}</div>
-            <div className="text-xs text-muted-foreground">Estações de Metrô</div>
-          </div>
+          {Object.entries(locationsByType)
+            .slice(0, 3)
+            .map(([type, count]) => (
+              <div key={type} className="text-center">
+                <div className="text-2xl font-bold text-primary">{count}</div>
+                <div className="text-xs text-muted-foreground">
+                  {getLocationTypeName(type)}
+                </div>
+              </div>
+            ))}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

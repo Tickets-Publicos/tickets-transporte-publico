@@ -1,7 +1,9 @@
 package com.tickets.api.service;
 
 import com.tickets.api.dto.common.PageResponseDto;
+import com.tickets.api.dto.report.ApproveReportDto;
 import com.tickets.api.dto.report.CreateReportDto;
+import com.tickets.api.dto.report.RejectReportDto;
 import com.tickets.api.dto.report.ReportResponseDto;
 import com.tickets.api.dto.report.UpdateStatusDto;
 import com.tickets.api.exception.ResourceNotFoundException;
@@ -110,6 +112,78 @@ public class ReportService {
         statusHistoryRepository.save(sh);
 
         r.setStatus(dto.getStatus());
+        Report updated = reportRepository.save(r);
+        return mapToDto(updated);
+    }
+
+    /**
+     * Lista reportes pendentes de aprovação (apenas para admins)
+     */
+    @Transactional(readOnly = true)
+    public PageResponseDto<ReportResponseDto> findPendingReports(Integer page, Integer limit) {
+        int p = (page == null || page < 1) ? 1 : page;
+        int l = (limit == null || limit < 1) ? 10 : limit;
+        Pageable pageable = PageRequest.of(p - 1, l);
+
+        Page<Report> pageRes = reportRepository.findByStatus(ReportStatus.PENDING, pageable);
+        List<ReportResponseDto> data = pageRes.getContent().stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+
+        return new PageResponseDto<>(data, pageRes.getTotalElements(), p, l, pageRes.getTotalPages());
+    }
+
+    /**
+     * Aprova um reporte (muda status)
+     */
+    @Transactional
+    public ReportResponseDto approveReport(String id, ApproveReportDto dto, String adminId) {
+        Report r = reportRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Report não encontrado"));
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin não encontrado"));
+
+        // Validar o novo status
+        if (dto.getNewStatus() != ReportStatus.IN_ANALYSIS && 
+            dto.getNewStatus() != ReportStatus.RESOLVED_PROVISIONAL &&
+            dto.getNewStatus() != ReportStatus.RESOLVED_CONFIRMED) {
+            throw new IllegalArgumentException("Status inválido para aprovação");
+        }
+
+        // Criar histórico
+        StatusHistory sh = StatusHistory.builder()
+                .report(r)
+                .status(dto.getNewStatus())
+                .comment(dto.getComment() != null ? dto.getComment() : "Reporte aprovado pelo administrador")
+                .user(admin)
+                .build();
+        statusHistoryRepository.save(sh);
+
+        r.setStatus(dto.getNewStatus());
+        Report updated = reportRepository.save(r);
+        return mapToDto(updated);
+    }
+
+    /**
+     * Rejeita um reporte (arquiva com motivo)
+     */
+    @Transactional
+    public ReportResponseDto rejectReport(String id, RejectReportDto dto, String adminId) {
+        Report r = reportRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Report não encontrado"));
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin não encontrado"));
+
+        // Criar histórico com motivo da rejeição
+        StatusHistory sh = StatusHistory.builder()
+                .report(r)
+                .status(ReportStatus.ARCHIVED)
+                .comment("Rejeitado: " + dto.getReason())
+                .user(admin)
+                .build();
+        statusHistoryRepository.save(sh);
+
+        r.setStatus(ReportStatus.ARCHIVED);
         Report updated = reportRepository.save(r);
         return mapToDto(updated);
     }

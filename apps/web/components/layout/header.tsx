@@ -1,31 +1,30 @@
-"use client"
+// web/components/layout/header.tsx
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { UserMenu } from "@/components/auth/user-menu"
-import { getCurrentUser, initializeAuth, type User } from "@/lib/auth"
-import { MapPin } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { UserMenu } from "@/components/auth/user-menu";
+import { useAuth } from "@/hooks/use-auth";
+import { MapPin, Shield } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
-  onLoginClick: () => void
+  onLoginClick: () => void;
 }
 
 export function Header({ onLoginClick }: HeaderProps) {
-  const [user, setUser] = useState<User | null>(null)
-
-  useEffect(() => {
-    initializeAuth()
-    setUser(getCurrentUser())
-  }, [])
-
-  const handleSignOut = () => {
-    setUser(null)
-  }
+  const { user, isAuthenticated, signOut } = useAuth();
+  const router = useRouter();
+  
+  // A role agora vem direto do Better Auth Admin plugin na sessão
+  const isAdmin = user?.role === "ADMIN";
+  
+  console.log("Header - isAuthenticated:", isAuthenticated, "isAdmin:", isAdmin, "role:", user?.role);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/dashboard')}>
           <MapPin className="h-6 w-6 text-primary" aria-hidden="true" />
           <div>
             <h1 className="text-lg font-bold">Acessibilidade SP</h1>
@@ -34,8 +33,18 @@ export function Header({ onLoginClick }: HeaderProps) {
         </div>
 
         <nav className="flex items-center space-x-4">
-          {user ? (
-            <UserMenu user={user} onSignOut={handleSignOut} />
+          {isAuthenticated && user ? (
+            <>
+              {isAdmin && (
+                <Link href="/admin/reports">
+                  <Button variant="outline" size="sm">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
+              <UserMenu user={user} onSignOut={signOut} />
+            </>
           ) : (
             <Button onClick={onLoginClick} variant="default">
               Entrar
@@ -44,5 +53,5 @@ export function Header({ onLoginClick }: HeaderProps) {
         </nav>
       </div>
     </header>
-  )
+  );
 }

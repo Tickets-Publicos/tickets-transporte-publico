@@ -4,9 +4,7 @@ import com.tickets.api.dto.location.CreateLocationDto;
 import com.tickets.api.dto.location.LocationResponseDto;
 import com.tickets.api.exception.ResourceNotFoundException;
 import com.tickets.api.model.entity.Location;
-import com.tickets.api.model.entity.User;
 import com.tickets.api.repository.LocationRepository;
-import com.tickets.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +17,6 @@ import java.util.stream.Collectors;
 public class LocationService {
 
     private final LocationRepository locationRepository;
-    private final UserRepository userRepository;
 
     @Transactional
     public LocationResponseDto create(CreateLocationDto dto) {
