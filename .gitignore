@@ -19,6 +19,8 @@ reports
 # Turbo
 .turbo
 
+.temp
+
 # Vercel
 .vercel
 

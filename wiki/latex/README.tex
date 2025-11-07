@@ -251,7 +251,6 @@ Visão geral: o semestre (\(\approx\) 16 semanas) será dividido em fases iterat
 
 \subsection{Requisitos Funcionais}
 
-% Ajuste: aumentar um pouco as colunas de ID/Tipo/Prioridade para evitar overfulls
 \begin{longtable}{|>{\raggedright\arraybackslash}p{1.2cm}|>{\raggedright\arraybackslash}p{1.1cm}|>{\centering\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{7.6cm}|}
 \hline
 \textbf{ID} & \textbf{Tipo} & \textbf{Prioridade} & \textbf{Descrição do Requisito} \\
@@ -265,21 +264,32 @@ Visão geral: o semestre (\(\approx\) 16 semanas) será dividido em fases iterat
 
 RF01 & RF & Alta & O sistema deve permitir visualizar mapa com geolocalização de problemas de acessibilidade \\
 \hline
-RF02 & RF & Alta & O usuário deve gerar relatório com descrição de novo problema \\
+RF02 & RF & Alta & O usuário deve gerar relatório com foto e descrição de novo problema \\
 \hline
-RF03 & RF & Alta & O problema deve aparecer no mapa após criação e aprovação do relatório \\
+RF03 & RF & Alta & O problema deve aparecer no mapa após criação do relatório \\
 \hline
-RF04 & RF & Alta & O administrador deve poder atualizar status do problema e comentar sobre esse status \\
+RF04 & RF & Alta & O sistema deve notificar entidade responsável quando marcada \\
 \hline
-RF05 & RF & Média & O usuário pode filtrar região específica no mapa \\
+RF05 & RF & Alta & O sistema não deve permitir relatórios duplicados \\
 \hline
-RF06 & RF & Média & Permitir validação manual das classificações automáticas \\
+RF06 & RF & Alta & O sistema deve usar IA para validar relatórios \\
+\hline
+RF07 & RF & Média & O usuário pode filtrar região específica no mapa \\
+\hline
+RF08 & RF & Média & O usuário deve marcar entidade responsável \\
+\hline
+RF09 & RF & Alta & Permitir cadastro com diferentes perfis (cidadão, gestor, validador) \\
+\hline
+RF10 & RF & Média & Gerar relatórios analíticos para gestores \\
+\hline
+RF11 & RF & Média & Permitir validação manual das classificações automáticas \\
+\hline
+RF12 & RF & Baixa & Exportar dados em formatos padrão (CSV, GeoJSON) \\
 \hline
 \end{longtable}
 
 \subsection{Requisitos Não-Funcionais}
 
-% Ajuste RNF: usar raggedright nas colunas iniciais e ajustar larguras para reduzir overfulls
 \begin{longtable}{|>{\raggedright\arraybackslash}p{1.4cm}|>{\raggedright\arraybackslash}p{1.1cm}|>{\centering\arraybackslash}p{2.4cm}|>{\raggedright\arraybackslash}p{6.8cm}|}
 \hline
 \textbf{ID} & \textbf{Tipo} & \textbf{Prioridade} & \textbf{Descrição do Requisito} \\
@@ -293,19 +303,23 @@ RF06 & RF & Média & Permitir validação manual das classificações automátic
 
 RNF01 & RNF & Alta & Tempo de resposta \textless{}2s para carregar mapa \\
 \hline
-RNF02 & RNF & Média & Compatível com Chrome, Edge e Firefox \\
+RNF02 & RNF & Alta & Processar e validar até 1000 relatórios/hora via IA \\
 \hline
-RNF03 & RNF & Média & Disponibilidade 99\% do tempo \\
+RNF03 & RNF & Média & Compatível com iOS e Android recentes \\
 \hline
-RNF04 & RNF & Média & Escalável para 50\% aumento de usuários \\
+RNF04 & RNF & Média & Disponibilidade 99\% do tempo \\
 \hline
-RNF05 & RNF & Baixa & Segurança e proteção de dados \\
+RNF05 & RNF & Média & Escalável para 50\% aumento de usuários \\
 \hline
-RNF06 & RNF & Baixa & Interface intuitiva e acessível \\
+RNF06 & RNF & Média & Notificações em tempo real \\
 \hline
-RNF07 & RNF & Alta & Conformidade WCAG 2.1 AA \\
+RNF07 & RNF & Baixa & Segurança e proteção de dados \\
 \hline
-RNF08 & RNF & Alta & Conformidade LGPD \\
+RNF08 & RNF & Baixa & Interface intuitiva e acessível \\
+\hline
+RNF09 & RNF & Alta & Conformidade WCAG 2.1 AA \\
+\hline
+RNF10 & RNF & Alta & Conformidade LGPD \\
 \hline
 \end{longtable}
 
@@ -441,7 +455,7 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
     \fbox{\parbox[c][3cm][c]{0.8\textwidth}{\centering Imagem \texttt{dashboard\_todos.png} não encontrada}}
 }
  
-\caption{Dashboards - Todos os Reports}
+\caption{Dashboards - All reports}
 \end{figure}
 
 \section{Modelagem ``Leve do Sistema''}
@@ -451,7 +465,7 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{\input{../uml/use-case-diagram.tex}}
+\input{../uml/casos_uso.tex}
 \caption{Diagrama de Casos de Uso}
 \end{figure}
 
@@ -471,15 +485,15 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 \hline
 \textbf{Complexidade} & Média \\
 \hline
-\textbf{Regras de Negócio} & - RN001: Todo reporte deve estar vinculado a um local existente no sistema. \newline - RN002: O reporte deve conter obrigatoriamente um título e uma descrição mínima. \newline - RN003: O sistema deve registrar data, hora e usuário responsável pelo reporte. \newline - RN004: O reporte pode conter evidências (foto ou vídeo), mas estas não são obrigatórias. \newline - RN005: O reporte não pode exceder o limite máximo de caracteres definidos pelo sistema (para título e descrição). \\
+\textbf{Regras de Negócio} & - RN001: Apenas usuários autenticados podem registrar reportes. \newline - RN002: Todo reporte deve estar vinculado a um local existente no sistema. \newline - RN003: O reporte deve conter obrigatoriamente um título e uma descrição mínima. \newline - RN004: O sistema deve registrar data, hora e usuário responsável pelo reporte. \newline - RN005: O reporte pode conter evidências (foto ou vídeo), mas estas não são obrigatórias. \newline - RN006: O reporte não pode exceder o limite máximo de caracteres definidos pelo sistema (para título e descrição). \\
 \hline
 \textbf{Pré-condições} & O pedestre deve possuir informações do problema (foto, vídeo). \newline O pedestre deverá disponibiliza sua localização. \newline O pedestre deve ter um cadastro para registrar um reporte. \\
 \hline
 \textbf{Pós-condição} & O Sistema terá um reporte com todas as informações do problema registrado em seu banco de dados \newline O Sistema registrará o reporte e atualizará o mapa para que o reporte conste para a localização \\
 \hline
-\textbf{Pontos de Inclusão} & N/A \\
+\textbf{Pontos de Inclusão} & UC004 – Autenticar Usuário (quando necessário). \\
 \hline
-\textbf{Pontos de Extensão} & N/A \\
+\textbf{Pontos de Extensão} & UC005 – Notificar Administrador (para pontos monitorados). \\
 \hline
 \end{longtable}
 
@@ -498,6 +512,18 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 7. O pedestre confirma a seleção da categoria e local & 8. O Sistema solicita informações sobre o problema e oferece dicas para que o reporte tenha boa qualidade \\
 \hline
 9. O Pedestre registra um título para o problema e uma descrição que dê mais detalhes sobre a natureza dele e ao checar as informações envia o reporte & 10. O Sistema informa o envio do reporte e solicita se o pedestre deseja criar um novo reporte ou visualizar o reporte publicado. \\
+\hline
+\end{longtable}
+
+\textbf{Fluxo Alternativo – Pedestre não está logado no sistema}
+
+\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
+\hline
+\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
+\hline
+1a. O pedestre seleciona a opção de reportar sem estar logado & 2a. O Sistema redireciona para a tela de login/cadastro (UC004 – Autenticar Usuário). \\
+\hline
+3a. Após login/cadastro concluído & 4a. O Sistema retorna ao ponto em que o fluxo principal estava, permitindo prosseguir do passo 3. \\
 \hline
 \end{longtable}
 
@@ -531,15 +557,15 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 \hline
 \textbf{Complexidade} & Baixa \\
 \hline
-\textbf{Regras de Negócio} & - RN006: O mapa deve exibir apenas problemas confirmados e devidamente registrados.\newline - RN007: O usuário pode aplicar filtros (categoria, data, status).\newline - RN008: Cada problema deve estar associado a uma localização válida.\newline - RN009: O sistema deve mostrar a data de registro e a situação do problema (pendente, em análise, resolvido).\newline - RN010: Problemas com mais de 1 ano podem ser arquivados, mas ainda disponíveis mediante filtro avançado. \\
+\textbf{Regras de Negócio} & - RN007: O mapa deve exibir apenas problemas confirmados e devidamente registrados.\newline - RN008: O usuário pode aplicar filtros (categoria, data, status).\newline - RN009: Cada problema deve estar associado a uma localização válida.\newline - RN010: O sistema deve mostrar a data de registro e a situação do problema (pendente, em análise, resolvido).\newline - RN011: Problemas com mais de 1 ano podem ser arquivados, mas ainda disponíveis mediante filtro avançado. \\
 \hline
 \textbf{Pré-condições} & O sistema deve conter reportes cadastrados.\newline O pedestre precisa ter acesso à plataforma (não é obrigatório login apenas para consulta). \\
 \hline
 \textbf{Pós-condição} & O usuário terá acesso visual aos problemas existentes no mapa e poderá selecionar pontos para ver detalhes. \\
 \hline
-\textbf{Pontos de Inclusão} & N/A \\
+\textbf{Pontos de Inclusão} & UC006 – Visualizar Detalhes de Problema (quando o usuário seleciona um ponto específico). \\
 \hline
-\textbf{Pontos de Extensão} & N/A \\
+\textbf{Pontos de Extensão} & UC001 – Reportar Problema (usuário pode criar um novo reporte a partir do mapa). \\
 \hline
 \end{longtable}
 
@@ -647,7 +673,6 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 
 \textbf{Fluxo de Exceção}
 
-% Ajuste: usar raggedright nas colunas desta longtable de exceção
 \begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
 \hline
 \textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
@@ -661,72 +686,21 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 \end{longtable}
 
 \subsection{UML - Diagrama de Classe de Domínio}
+
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{\input{../uml/class-diagram.tex}}
+\IfFileExists{../imgs/class_diagram.png}{%
+    \includegraphics[width=\textwidth]{../imgs/class_diagram.png}
+}{%
+    \fbox{\parbox[c][6cm][c]{\textwidth}{\centering Imagem \texttt{class\_diagram.png} não encontrada}}
+}
 \caption{Diagrama de Classes}
 \end{figure}
 
 \subsection{UML - Diagrama de Sequência}
 
-\subsubsection{5.4.1 – US01: Reportar Problema}
-
-\begin{figure}[H]
-    \centering
-    \resizebox{\textwidth}{!}{\input{../uml/sequencia-reportar-problema.tex}}
-    \caption{Diagrama de Sequência – Reportar Problema}
-\end{figure}
-
-Fluxo resumido:
-\begin{itemize}
-    \item Usuário acessa a plataforma e seleciona a opção de reportar problema.
-    \item Sistema solicita autenticação (se necessário).
-    \item Usuário informa localização, categoria, título, descrição e evidências.
-    \item Sistema valida dados, registra o reporte e atualiza o mapa.
-    \item Notificação de sucesso é exibida ao usuário.
-\end{itemize}
-
-\subsubsection{5.4.2 – US02: Consultar Mapa}
-
-\begin{figure}[H]
-    \centering
-    \resizebox{\textwidth}{!}{\input{../uml/sequencia-consultar-mapa.tex}}
-    \caption{Diagrama de Sequência – Consultar Mapa}
-\end{figure}
-
-Fluxo resumido:
-\begin{itemize}
-    \item Usuário acessa a opção de consultar mapa.
-    \item Sistema carrega dados de problemas registrados.
-    \item Usuário aplica filtros e navega pelo mapa.
-    \item Sistema exibe detalhes ao selecionar um marcador.
-\end{itemize}
-
-\subsubsection{5.4.3 – US03: Atualizar Status de Problema}
-
-\begin{figure}[H]
-    \centering
-    \resizebox{\textwidth}{!}{\input{../uml/sequencia-atualizar-status.tex}}
-    \caption{Diagrama de Sequência – Atualizar Status de Problema}
-\end{figure}
-
-Fluxo resumido:
-\begin{itemize}
-    \item Administrador acessa lista de problemas e seleciona um reporte.
-    \item Sistema exibe detalhes e permite atualização de status.
-    \item Administrador altera status para "Resolvido Provisório".
-    \item Sistema notifica o autor do reporte para validação.
-    \item Autor confirma ou rejeita resolução; sistema atualiza status conforme resposta.
-\end{itemize}
-
 \section{Descrição da Arquitetura e Ferramentas Utilizadas}
 \label{sec:arquitetura}
-
-\begin{figure}[H]
-\centering
-\resizebox{\textwidth}{!}{\input{../uml/system-design-diagram.tex}}
-\caption{Arquitetura do Sistema}
-\end{figure}
 
 \subsection{Stack Tecnológico}
 
