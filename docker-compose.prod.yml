@@ -1,8 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 # Este arquivo usa as variáveis de ambiente do arquivo .env
 # O arquivo .env é criado automaticamente pelo CI/CD a partir da secret ENV_PRODUCTION
-# 
+#
 # Variáveis esperadas no .env:
 # - DATABASE_URL: URL completa do PostgreSQL (ex: postgresql://user:pass@host:5432/db)
 # - JWT_SECRET: Secret para assinatura de tokens JWT
@@ -12,6 +12,29 @@ version: '3.8'
 # - IMAGE_TAG: Tag das imagens (padrão: latest)
 
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16
+    container_name: tickets-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tickets}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - tickets-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-tickets}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # API (Java Spring Boot) - Usando imagem do GHCR
   api:
     image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-tickets-publicos}/tickets-api-java:${IMAGE_TAG:-latest}
@@ -22,10 +45,14 @@ services:
     environment:
       # Sobrescreve com variáveis específicas do ambiente
       SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - tickets-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -69,7 +96,15 @@ services:
     networks:
       - tickets-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -78,12 +113,19 @@ services:
   app-sql:
     image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-tickets-publicos}/tickets-app-sql:${IMAGE_TAG:-latest}
     container_name: tickets-sql-init
-    restart: "no"  # Executa uma vez e para
+    restart: "no" # Executa uma vez e para
     env_file:
       - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - tickets-network
 
 networks:
   tickets-network:
     driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
