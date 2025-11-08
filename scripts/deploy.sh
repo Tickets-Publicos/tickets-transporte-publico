@@ -158,7 +158,13 @@ main_deploy() {
     docker_login
 
     log "[2/6] Baixando imagens mais recentes..."
-    docker compose -f "$COMPOSE_FILE" pull 2>&1 | tee -a "$LOG_FILE"
+    # Pull de cada serviço individualmente para evitar erros
+    for service in $(docker compose -f "$COMPOSE_FILE" config --services); do
+        log "Baixando imagem do serviço: $service"
+        docker compose -f "$COMPOSE_FILE" pull "$service" 2>&1 | tee -a "$LOG_FILE" || {
+            log_warning "Falha ao baixar imagem do serviço $service, continuando..."
+        }
+    done
     log_success "Imagens atualizadas"
 
     log "[3/6] Escalando serviços para múltiplas réplicas (zero downtime)..."

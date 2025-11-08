@@ -1,54 +1,45 @@
 version: '3.8'
 
-services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:16-alpine
-    container_name: tickets-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-tickets}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tickets123}
-      POSTGRES_DB: ${POSTGRES_DB:-tickets}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - tickets-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tickets}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+# Este arquivo usa as variáveis de ambiente do arquivo .env
+# O arquivo .env é criado automaticamente pelo CI/CD a partir da secret ENV_PRODUCTION
+# 
+# Variáveis esperadas no .env:
+# - DATABASE_URL: URL completa do PostgreSQL (ex: postgresql://user:pass@host:5432/db)
+# - JWT_SECRET: Secret para assinatura de tokens JWT
+# - NEXT_PUBLIC_API_URL: URL da API para o frontend
+# - REGISTRY: Registry do Docker (padrão: ghcr.io)
+# - REPO_OWNER: Owner do repositório (padrão: tickets-publicos)
+# - IMAGE_TAG: Tag das imagens (padrão: latest)
 
-  # API (NestJS) - Usando imagem do GHCR
+services:
+  # API (Java Spring Boot) - Usando imagem do GHCR
   api:
-    image: ${API_IMAGE:-ghcr.io/vinicius-cappatti/tickets-transporte-publico-api-java:latest}
+    image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-tickets-publicos}/tickets-api-java:${IMAGE_TAG:-latest}
     container_name: tickets-api
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-tickets}:${POSTGRES_PASSWORD:-tickets123}@postgres:5432/${POSTGRES_DB:-tickets}
-      NODE_ENV: production
-      PORT: 3000
-      JWT_SECRET: ${JWT_SECRET}
-    depends_on:
-      postgres:
-        condition: service_healthy
+      # Sobrescreve com variáveis específicas do ambiente
+      SPRING_PROFILES_ACTIVE: prod
     networks:
       - tickets-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
   # Web (Next.js) - Usando imagem do GHCR
   web:
-    image: ${WEB_IMAGE:-ghcr.io/vinicius-cappatti/tickets-transporte-publico-web:latest}
+    image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-tickets-publicos}/tickets-web:${IMAGE_TAG:-latest}
     container_name: tickets-web
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
+      # Sobrescreve com variáveis específicas do ambiente
       NODE_ENV: production
     depends_on:
       api:
@@ -56,7 +47,7 @@ services:
     networks:
       - tickets-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3001 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -64,14 +55,14 @@ services:
 
   # Nginx Reverse Proxy - Usando imagem customizada do GHCR
   nginx:
-    image: ${NGINX_IMAGE:-ghcr.io/vinicius-cappatti/tickets-transporte-publico-nginx:latest}
+    image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-tickets-publicos}/tickets-nginx:${IMAGE_TAG:-latest}
     container_name: tickets-nginx
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    env_file:
+      - .env
     depends_on:
       - api
       - web
@@ -83,9 +74,15 @@ services:
       timeout: 10s
       retries: 3
 
-volumes:
-  postgres_data:
-    driver: local
+  # SQL Initialization - Usando imagem do GHCR (executa migrações/seeds)
+  app-sql:
+    image: ${REGISTRY:-ghcr.io}/${REPO_OWNER:-tickets-publicos}/tickets-app-sql:${IMAGE_TAG:-latest}
+    container_name: tickets-sql-init
+    restart: "no"  # Executa uma vez e para
+    env_file:
+      - .env
+    networks:
+      - tickets-network
 
 networks:
   tickets-network:
