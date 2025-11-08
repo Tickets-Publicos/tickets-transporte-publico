@@ -483,21 +483,21 @@ jobs:
         run: |
           echo "📦 Copiando arquivos necessários para o servidor..."
 
-          # Cria diretório de deploy se não existir
+          # Cria diretório de deploy no home do usuário
           ssh -o StrictHostKeyChecking=no "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "mkdir -p /home/cicdbot"
+            "mkdir -p ~/deploy"
 
           # Copia script de deploy
           echo "📄 Copiando deploy.sh..."
           scp -o StrictHostKeyChecking=no \
             scripts/deploy.sh \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/home/cicdbot/deploy.sh"
+            "${DEPLOY_USER}@${DEPLOY_HOST}:~/deploy/deploy.sh"
 
           # Copia docker-compose.prod.yml
           echo "📄 Copiando docker-compose.prod.yml..."
           scp -o StrictHostKeyChecking=no \
             docker-compose.prod.yml \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/home/cicdbot/docker-compose.prod.yml"
+            "${DEPLOY_USER}@${DEPLOY_HOST}:~/deploy/docker-compose.prod.yml"
 
           echo "✅ Arquivos copiados com sucesso"
 
@@ -521,16 +521,16 @@ jobs:
           # Copia o arquivo para o servidor
           scp -o StrictHostKeyChecking=no \
             /tmp/env_production_temp \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/home/cicdbot/.env"
+            "${DEPLOY_USER}@${DEPLOY_HOST}:~/deploy/.env"
 
           # Define permissões corretas
           ssh -o StrictHostKeyChecking=no "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "chmod 600 /home/cicdbot/.env"
+            "chmod 600 ~/deploy/.env"
 
           # Verifica se o arquivo foi criado
           echo "📋 Verificando arquivo .env criado..."
           ssh -o StrictHostKeyChecking=no "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "wc -l /home/cicdbot/.env"
+            "wc -l ~/deploy/.env"
 
           # Remove arquivo temporário local
           rm -f /tmp/env_production_temp
@@ -550,7 +550,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no "${DEPLOY_USER}@${DEPLOY_HOST}" bash << ENDSSH
             set -euo pipefail
             
-            cd /home/cicdbot
+            cd ~/deploy
             
             # Torna o script executável
             echo "[INFO] Tornando script executável..."
@@ -577,7 +577,7 @@ jobs:
           echo "🔍 Verificando status do deployment..."
 
           ssh -o StrictHostKeyChecking=no "${DEPLOY_USER}@${DEPLOY_HOST}" << 'ENDSSH'
-            cd /home/cicdbot
+            cd ~/deploy
             
             echo ""
             echo "📊 Status dos containers:"

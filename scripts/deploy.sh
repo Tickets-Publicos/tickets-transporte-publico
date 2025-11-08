@@ -24,8 +24,8 @@ set -euo pipefail
 # Configuração
 # ==============================================================================
 
-# Diretório padrão da aplicação
-PROJECT_DIR="/home/cicdbot"
+# Diretório padrão da aplicação (usa o diretório home do usuário)
+PROJECT_DIR="${HOME}/deploy"
 
 # Arquivos de configuração
 COMPOSE_FILE="${PROJECT_DIR}/docker-compose.prod.yml"
