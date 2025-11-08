@@ -32,6 +32,8 @@ jobs:
   test:
     name: Test All Projects
     runs-on: ubuntu-latest
+    # Pula este job se for um deploy manual
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.deploy != 'true'
 
     services:
       postgres:
@@ -174,6 +176,8 @@ jobs:
   test-java:
     name: Test Java API
     runs-on: ubuntu-latest
+    # Pula este job se for um deploy manual
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.deploy != 'true'
 
     services:
       postgres:
@@ -267,7 +271,10 @@ jobs:
     name: Build Artifacts
     runs-on: ubuntu-latest
     needs: [test, test-java]
-    if: github.ref == 'refs/heads/main'
+    # Pula este job se for um deploy manual, senão exige que seja main
+    if: |
+      (github.event_name != 'workflow_dispatch' || github.event.inputs.deploy != 'true') &&
+      github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
@@ -352,7 +359,10 @@ jobs:
     name: Build & Push Docker Images
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.ref == 'refs/heads/main'
+    # Pula este job se for um deploy manual, senão exige que seja main
+    if: |
+      (github.event_name != 'workflow_dispatch' || github.event.inputs.deploy != 'true') &&
+      github.ref == 'refs/heads/main'
 
     strategy:
       matrix:
@@ -436,7 +446,8 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [docker]
+    # Remove a dependência de docker quando for deploy manual
+    needs: []
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
     environment: production
 
@@ -595,7 +606,8 @@ jobs:
     name: Quality Summary
     runs-on: ubuntu-latest
     needs: [test, test-java]
-    if: always()
+    # Só roda se os testes rodaram
+    if: always() && (github.event_name != 'workflow_dispatch' || github.event.inputs.deploy != 'true')
 
     steps:
       - name: Download all artifacts
