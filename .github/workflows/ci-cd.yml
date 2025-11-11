@@ -77,6 +77,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: |
+            .turbo
+            apps/**/.turbo
+            packages/**/.turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Cache Jest
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/.jest-cache
+            apps/web/coverage
+          key: ${{ runner.os }}-jest-${{ hashFiles('apps/web/**/*.{ts,tsx,js,jsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -212,6 +233,17 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-m2-
+
+      - name: Cache Maven build
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/api-java/target/classes
+            apps/api-java/target/test-classes
+            apps/api-java/target/generated-sources
+          key: ${{ runner.os }}-maven-build-${{ hashFiles('apps/api-java/src/**/*.java', 'apps/api-java/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-build-
 
       - name: Run Tests with Reports
         working-directory: apps/api-java
