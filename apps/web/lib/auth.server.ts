@@ -3,7 +3,7 @@ import { customSession } from "better-auth/plugins";
 import jwt from "jsonwebtoken";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-const JWT_SECRET = process.env.AUTH_SECRET || process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET || "your-super-secret-key-change-this-in-production-min-32-chars";
 
 interface UserInfo {
   id: string;
@@ -76,6 +76,8 @@ export const auth = betterAuth({
           name: user.name,
           image: user.image || undefined,
         });
+        console.log("[customSession] Backend user:", backendUser);
+        console.log("[customSession] Original user:", user);
 
         return {
           user: {
