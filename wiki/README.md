@@ -1,242 +1,486 @@
-## 5. Modelagem “Leve do Sistema”  
-
-### 5.1 UML - Casos de Uso  
-
-<img width="410" height="270" alt="image" src="https://github.com/user-attachments/assets/59328def-1aca-4b1f-85ba-48c6754f89c2" />
-
-### 5.1.1 Especificações dos Casos de Uso
-
-#### 5.1.1.1 Reportar Problema
-
-| **Identificador**      | UC001 – Reportar Problema  |
-|------------------------|----------------------------|
-| **Nome**               | Reportar Problema          |
-| **Atores**             | Primário: Pedestre utilizando o Sistema de Reportes de Acessibilidade. <br> Secundário: Administrador de um ponto registrado no Sistema.|
-| **Sumário**            | Um pedestre cria na plataforma um reporte para um problema de acessibilidade, visto em ponto de transporte público |
-| **Complexidade**       | Média                      |
-| **Regras de Negócio**  | - RN001: Apenas usuários autenticados podem registrar reportes. <br>- RN002: Todo reporte deve estar vinculado a um local existente no sistema. <br>- RN003: O reporte deve conter obrigatoriamente um título e uma descrição mínima. <br>- RN004: O sistema deve registrar data, hora e usuário responsável pelo reporte. <br>- RN005: O reporte pode conter evidências (foto ou vídeo), mas estas não são obrigatórias. <br>- RN006: O reporte não pode exceder o limite máximo de caracteres definidos pelo sistema (para título e descrição).|
-| **Pré-condições**      | O pedestre deve possuir informações do problema (foto, vídeo). <br> O pedestre deverá disponibiliza sua localização. <br> O pedestre deve ter um cadastro para registrar um reporte. <br>         |
-| **Pós-condição**       | O Sistema terá um reporte com todas as informações do problema registrado em seu banco de dados <br> O Sistema registrará o reporte e atualizará o mapa para que o reporte conste para a localização  |
-| **Pontos de Inclusão** | UC004 – Autenticar Usuário (quando necessário). |
-| **Pontos de Extensão** | UC005 – Notificar Administrador (para pontos monitorados).  |
-
-#### Fluxo Principal
-
-| **Ações do Ator**               | **Ações do Sistema**                                                                             |
-|--------------------------------|--------------------------------------------------------------------------------------------------|
-| 1. O Pedestre seleciona que deseja reportar um problema na página principal        | 2. O Sistema exibe uma listagem dos pontos e estações e o mapa|
-| 3. Escolhe a localização através da busca pelo nome ou endereço, ou ainda através do mapa | 4. O Sistema retorna e solicita a confirmação do pedestre para que ele prossiga|
-| 5. O pedestre verifica as informações do local selecionado e confirma | 6. O Sistema exibe uma lista de categorias problemas e oferece outro passo de confirmação para o pedestre|
-| 7. O pedestre confirma a seleção da categoria e local | 8. O Sistema solicita informações sobre o problema e oferece dicas para que o reporte tenha boa qualidade|
-| 9. O Pedestre registra um título para o problema e uma descrição que dê mais detalhes sobre a natureza dele e ao checar as informações envia o reporte | 10. O Sistema informa o envio do reporte e solicita se o pedestre deseja criar um novo reporte ou visualizar o reporte publicado.|
+# 🎫 Sistema de Tickets de Transporte Público
 
-#### Fluxo Alternativo – Pedestre não está logado no sistema
+Sistema para reportar e gerenciar problemas de transporte público, desenvolvido com NestJS, Next.js e PostgreSQL.
 
-| **Ações do Ator**                                             | **Ações do Sistema**                                                                              |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| 1a. O pedestre seleciona a opção de reportar sem estar logado | 2a. O Sistema redireciona para a tela de login/cadastro (UC004 – Autenticar Usuário).             |
-| 3a. Após login/cadastro concluído                             | 4a. O Sistema retorna ao ponto em que o fluxo principal estava, permitindo prosseguir do passo 3. |
+## 📚 Índice
 
-#### Fluxos de Exceção
+- [Deploy e CI/CD](#-deploy-e-cicd)
+- [Desenvolvimento Local](#-desenvolvimento-local)
+- [Documentação Técnica](#-documentação-técnica)
+- [Contribuindo](#-contribuindo)
 
-| **Ações do Ator**                                                | **Ações do Sistema**                                                                                   |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| 1e. O pedestre seleciona uma localização inexistente ou inválida | 2e. O sistema exibe mensagem de erro e solicita nova seleção de localização.                           |
-| 2e. O pedestre não insere título ou descrição                    | 3e. O sistema informa que os campos são obrigatórios e impede o envio até que sejam preenchidos.       |
-| 3e. O pedestre tenta anexar arquivo em formato não suportado     | 4e. O sistema rejeita o upload e informa quais formatos são permitidos.                                |
-| 4e. O sistema encontra falha de conexão no envio do reporte      | 5e. O sistema notifica falha técnica e oferece a opção de salvar localmente para tentar enviar depois. |
+---
 
-#### 5.1.1.2 Consultar o Mapa de Problemas
+## 🚀 Deploy e CI/CD
 
-| **Identificador**      | UC002 – Consultar Mapa de Problemas |
-| ---------------------- | ------------------------------------|
-| **Nome**               | Consultar Mapa de Problemas|
-| **Atores**             | Primário: Pedestre (usuário do sistema). <br> Secundário: Administrador (para análise de ocorrências).|
-| **Sumário**            | O pedestre acessa o sistema para visualizar, no mapa, os problemas de acessibilidade reportados em pontos de transporte público.|
-| **Complexidade**       | Baixa|
-| **Regras de Negócio**  | - RN007: O mapa deve exibir apenas problemas confirmados e devidamente  em status "Aceito" ou posterior.<br> - RN008: O usuário pode aplicar filtros (categoria, data, status).<br> - RN009: Cada problema deve estar associado a uma localização válida.<br> - RN010: O sistema deve mostrar a data de registro e a situação do problema (pendente, em análise, resolvido).<br> - RN011: Problemas com mais de 1 ano podem ser arquivados, mas ainda disponíveis mediante filtro avançado.<br> -RN012: Não devem ser exibidos os problemas em status "Rejeitado" |
-| **Pré-condições**      | O sistema deve conter reportes cadastrados.<br> O pedestre precisa ter acesso à plataforma (não é obrigatório login apenas para consulta).|
-| **Pós-condição**       | O usuário terá acesso visual aos problemas existentes no mapa e poderá selecionar pontos para ver detalhes.|
-| **Pontos de Inclusão** | UC006 – Visualizar Detalhes de Problema (quando o usuário seleciona um ponto específico).|
-| **Pontos de Extensão** | UC001 – Reportar Problema (usuário pode criar um novo reporte a partir do mapa).|
+### Deploy Automático com GitHub Actions
 
-#### Fluxo Principal
+Este projeto utiliza **GitHub Actions** para CI/CD com deploy em produção via SSH.
 
-| **Ações do Ator**                                                  | **Ações do Sistema**                                                                   |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| 1. O pedestre acessa a opção “Consultar mapa de problemas”.        | 2. O sistema carrega o mapa com todos os pontos e marcadores de problemas registrados. |
-| 3. O pedestre pode aplicar filtros (categoria, data, status).      | 4. O sistema atualiza o mapa exibindo apenas os problemas que atendem ao filtro.       |
-| 5. O pedestre navega pelo mapa e seleciona um marcador específico. | 6. O sistema exibe informações resumidas do problema e opção de ver detalhes (UC006).  |
+**O que acontece automaticamente:**
 
-#### Fluxo Alternativo – Sem problemas cadastrados
+- ✅ **Pull Requests**: Roda testes e valida o código
+- ✅ **Push na `main`**: Testa, builda e publica imagens Docker
+- ✅ **Deploy Manual**: Workflow disparável para deploy em produção
 
-| **Ações do Ator**                                               | **Ações do Sistema**                                                                                               |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| 1a. O pedestre acessa o mapa sem que haja reportes cadastrados. | 2a. O sistema exibe mensagem “Nenhum problema cadastrado até o momento” e mostra apenas os pontos sem ocorrências. |
+**Características do Sistema de Deploy:**
 
-#### Fluxos de Exceção
+- 🔄 **Zero Downtime**: Rolling updates com réplicas
+- 📝 **Logging Completo**: Todas operações registradas em `deploy.log`
+- 🐳 **Docker Compose**: Orquestração simplificada
+- 🔒 **Seguro**: Variáveis de ambiente via GitHub Secrets
+- 📊 **Health Checks**: Verificação automática de saúde dos serviços
 
-| **Ações do Ator**                                                              | **Ações do Sistema**                                                                                 |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| 1e. O sistema não consegue carregar o mapa (falha na API de mapas ou conexão). | 2e. O sistema exibe mensagem de erro “Não foi possível carregar o mapa. Tente novamente mais tarde”. |
-| 2e. O usuário aplica um filtro inválido ou inexistente.                        | 3e. O sistema exibe mensagem “Filtro inválido” e mantém a última visualização correta.               |
-| 3e. O marcador selecionado não possui dados válidos (erro no registro).        | 4e. O sistema exibe mensagem de inconsistência e oculta o marcador defeituoso.                       |
+### 📖 Documentação de Deploy
 
-#### 5.1.1.3 Atualizar Status de Problema
+**[docs/DEPLOY.md](./docs/DEPLOY.md)** - Guia completo:
 
-| **Identificador**      | UC003 – Atualizar Status de Problema|
-| ---------------------- | ------------------------------------|
-| **Nome**               | Atualizar Status de Problema|
-| **Atores**             | Primário: Administrador (responsável por um ponto de transporte público). <br> Secundário: Pedestre autor do reporte.|
-| **Sumário**            | O administrador acessa o sistema para alterar o status de um problema reportado|
-| **Complexidade**       | Média|
-| **Regras de Negócio**  | - RN013: Apenas administradores autenticados podem atualizar status.<br> - RN014: O status pode assumir: **Aguardando análise**, **Rejeitado**, **Aceito**, **Correção em andamento**, **Corrigido** e **Pausado**.<br> - RN015: Toda atualização deve registrar contagem de dias no status, data e hora da alteração, e administrador autor da alteração.<br> -RN016: O administrador pode inserir um comentário detalhando os motivos da mudança de status.<br> -RN017: O administrador pode anexar arquivos em .png, .jpg ou .jpeg no comentário da descrição|
-| **Pré-condições**      | O administrador deve estar autenticado.<br> Deve existir pelo menos um problema reportado no ponto administrado.|
-| **Pós-condição**       | O status do problema será atualizado no sistema, refletindo tanto a ação do administrador.|
-| **Pontos de Inclusão** | UC002 – Consultar Mapa de Problemas (para localizar o problema).|
-| **Pontos de Extensão** | N/A|
+- Quick start e configuração inicial
+- Processo de deploy com zero downtime
+- Comandos úteis e troubleshooting
+- Segurança e boas práticas
 
-#### Fluxo Principal
+### 🚀 Quick Start - Deploy em Produção
 
-| **Ações do Ator**                                                                   | **Ações do Sistema**                                                                              |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------  |
-| 1. O administrador acessa a lista/mapa de problemas reportados.                     | 2. O sistema exibe os problemas associados ao ponto.                                              |
-| 3. O administrador seleciona um problema específico.                                | 4. O sistema exibe detalhes do problema e status atual.                                           |
-| 5. O administrador escolhe a opção de avançar o status do problema.                 | 6. O sistema exibe a tela para inserção de comentário sobre a mudança e anexar arquivos.          |
-| 7. O administrador faz comentários e anexa arquivos sobre sua ação e a confirma.    | 8. O sistema exibe uma mensagem de alteração concluída e altera o status do problema.             |
+**1. Setup do Servidor (Uma Única Vez)**
 
-#### Fluxo Alternativo - Pedestre rejeita a resolução
+```bash
+# No servidor de produção
+sudo bash setup-server.sh
+```
 
-| **Ações do Ator**                       | **Ações do Sistema**                                                                    |
-| -----------------------------------     | --------------------------------------------------------------------------------------- |
-| 9a. O administrador rejeita o problema. | 10a. O sistema altera o status para **Rejeitado**.                                      |
+Este script irá:
 
-#### Fluxo de Exceção
+- ✅ Instalar Docker e dependências
+- ✅ Criar usuário `cicdbot`
+- ✅ Configurar SSH e firewall
+- ✅ Preparar estrutura de diretórios
 
-| **Ações do Ator**                                                            | **Ações do Sistema**                                             |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| 1e. O administrador não está autenticado.                                    | 2e. O sistema não exibe a opção de alterar status do problema.   |
+**2. Configurar Secrets no GitHub**
 
-### 5.2 UML - Diagrama de Classe de Domínio
+Acesse: `Settings > Secrets and variables > Actions`
 
-![Diagrama de Classe](https://github.com/vinicius-cappatti/tickets-transporte-publico/blob/main/wiki/imgs/class-diagram.png)
+| Secret           | Descrição                     |
+| ---------------- | ----------------------------- |
+| `DEPLOY_SSH_KEY` | Chave privada SSH do servidor |
+| `DEPLOY_HOST`    | IP ou hostname do servidor    |
+| `DEPLOY_USER`    | `cicdbot`                     |
+| `ENV_PRODUCTION` | Conteúdo completo do `.env`   |
 
-### 5.3 UML - Diagrama de Sequência
+**3. Executar Deploy**
 
-#### 5.4.1 - US01 - Reportar Problema
+1. Acesse: `Actions > CI/CD Pipeline`
+2. Clique: `Run workflow`
+3. Marque: ☑️ **Deploy to production**
+4. Clique: `Run workflow`
 
-![Diagrama de sequencia](https://github.com/user-attachments/assets/12d24d3b-81a3-4a8b-81dd-f2abeac3009e)
+### 🛠️ Scripts Disponíveis
 
-#### 5.4.2 - US02 - Consultar mapa
+| Script                    | Descrição                             |
+| ------------------------- | ------------------------------------- |
+| `scripts/setup-server.sh` | Setup inicial do servidor de produção |
+| `scripts/deploy.sh`       | Script de deploy (executado na VM)    |
 
-![Diagrama de sequencia](https://github.com/vinicius-cappatti/tickets-transporte-publico/blob/main/wiki/imgs/sequencia-consulta-mapa.png)
+### Arquivos Importantes de Deploy
 
-#### 5.4.3 - US03 - Atualizar status de problema
+- `.github/workflows/ci-cd.yml` - Pipeline completo de CI/CD
+- `docker-compose.prod.yml` - Configuração de produção
+- `.env.production.example` - Exemplo de variáveis de ambiente
+- `scripts/setup-server.sh` - Setup automatizado do servidor
+- `scripts/deploy.sh` - Script de deploy na VM
 
-![Diagrama de sequencia](https://github.com/vinicius-cappatti/tickets-transporte-publico/blob/main/wiki/imgs/sequencia-atualizar-status.png)
+---
 
-## 6. Descrição da Arquitetura e Ferramentas Utilizadas
+## 💻 Desenvolvimento Local
 
-### Stack Tecnológico
+### Pré-requisitos
 
-**Backend:**
+- Node.js 22+
+- pnpm 10.17.1+
+- Docker e Docker Compose
+- Git
 
-- Node.js com framework NestJS
-- PostgreSQL com extensão PostGIS para dados geoespaciais
-- Docker para containerização
+### Instalação
 
-**Frontend:**
+```bash
+# Clonar repositório
+git clone https://github.com/vinicius-cappatti/tickets-transporte-publico.git
+cd tickets-transporte-publico
 
-- React + Next.js para aplicação web
-- ShadcnUI para componentes de interface
+# Instalar dependências
+pnpm install
 
-**Infraestrutura:**
+# Configurar variáveis de ambiente
+cp .env.example .env
 
-- Kubernetes para orquestração
-- AWS S3 ou MinIO para armazenamento de objetos
-- GitHub Actions para CI/CD
+# Iniciar containers de desenvolvimento
+docker-compose up -d
 
-### Padrões e Princípios
+# Executar migrations
+docker exec tickets-api npx prisma migrate dev
 
-- Arquitetura de microsserviços
-- API RESTful seguindo OpenAPI 3.0
-- Autenticação via JWT
-- Princípios SOLID e Clean Architecture
-- Testes automatizados (unitários, integração, E2E)
+# Acessar aplicação
+# API: http://localhost:3000
+# Web: http://localhost:3001
+```
 
-## 7. Plano de Desenvolvimento
+### Scripts Disponíveis
 
-### 7.1 Cronograma Detalhado (16 semanas)
+```bash
+# Desenvolvimento
+pnpm dev              # Inicia todos os apps em modo dev
+pnpm dev:api          # Inicia apenas a API
+pnpm dev:web          # Inicia apenas o Web
 
-**Fase 0 — Preparação (Semana 1)**
-- Alinhamento de requisitos e definição do escopo MVP
-- Backlog priorizado e ambiente de desenvolvimento
+# Build
+pnpm build            # Build de todos os apps
+pnpm build:api        # Build apenas da API
+pnpm build:web        # Build apenas do Web
 
-**Fase 1 — Protótipo Web (Semanas 2–4)**
-- Protótipo PWA com mock de dados
-- Fluxos principais: cadastro, mapa, painel
+# Testes
+pnpm test             # Roda todos os testes
+pnpm test:api         # Testa apenas a API
+pnpm lint             # Roda linting
+pnpm check-types      # Verifica tipos TypeScript
 
-**Fase 2 — Análise e Modelagem (Semanas 4–6)**
-- Casos de uso e entidades
-- Modelo conceitual e dicionário de dados
+# Docker
+docker-compose up -d           # Desenvolvimento
+docker-compose -f docker-compose.prod.yml up -d  # Produção
+```
 
-**Fase 3 — Design de Classes (Semanas 6–8)**
-- Diagrama de classes do domínio
-- Especificação de serviços
+---
 
-**Fase 4 — Diagramas de Sequência (Semanas 8–9)**
-- Fluxos críticos modelados
-- Definição de APIs e contratos
+## 📖 Documentação Técnica
 
-**Fase 5 — Banco de Dados (Semanas 9–10)**
-- Esquema físico PostGIS
-- Scripts DDL e migração
+### Estrutura do Projeto
 
-**Fase 6 — Implementação API (Semanas 10–13)**
-- API REST/GraphQL com CRUD
-- Testes automatizados e CI
+```text
+tickets-transporte-publico/
+├── apps/
+│   ├── api/          # Backend NestJS
+│   └── web/          # Frontend Next.js
+├── packages/         # Shared packages
+├── docker/           # Dockerfiles
+├── nginx/            # Nginx config
+├── scripts/          # Scripts de automação
+├── wiki/             # Documentação técnica e diagramas
+└── .github/          # GitHub Actions workflows
+```
 
-**Fase 7 — Integração e Testes (Semanas 13–14)**
-- Integração frontend-backend
-- Testes E2E e acessibilidade
+### Tecnologias Principais
 
-**Fase 8 — Finalização (Semanas 15–16)**
-- Documentação completa
-- Release MVP e roadmap futuro
+- **Backend**: NestJS, Prisma, PostgreSQL
+- **Frontend**: Next.js 15, React, Tailwind CSS, shadcn/ui
+- **Infraestrutura**: Docker, Nginx, AWS EC2
+- **CI/CD**: GitHub Actions
+- **Monorepo**: Turborepo, pnpm workspaces
 
-### 7.2 Métricas de Sucesso
-- **Técnicas**: Acurácia >85% na detecção
-- **Impacto**: Taxa de resolução de barreiras
+### Diagramas e Documentação
 
+A documentação técnica completa, incluindo diagramas UML e design do sistema, está disponível na pasta `wiki/`.
 
-## 8. Resultados
+---
 
-*[Esta seção será preenchida após a implementação, incluindo:
+## 🤝 Contribuindo
 
-- Métricas de desempenho do sistema
-- Estatísticas de uso e engajamento
-- Casos de sucesso e impactos mensuráveis
-- Feedback dos usuários e gestores
-- Lições aprendidas]*
+Veja [CONTRIBUTING.md](./CONTRIBUTING.md) para guidelines de contribuição.
 
-## 9. Conclusão e Trabalhos Futuros
+### Fluxo de Trabalho
 
-### Conclusão Preliminar
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-O projeto visa criar uma solução tecnológica escalável e sustentável para o mapeamento colaborativo de barreiras de acessibilidade urbana, contribuindo diretamente para o cumprimento do ODS 11 e promovendo cidades mais inclusivas e acessíveis.
+**Pull Requests** disparam automaticamente:
 
-### Próximos Passos
+- Testes e validações
+- Comentário automático com status do build
+- Review automatizado
 
-1. Formar equipe técnica multidisciplinar
-2. Desenvolver prova de conceito
-3. Estabelecer parceria com cidade piloto
-4. Lançar MVP e coletar feedback
-5. Iterar com base em dados reais
+---
 
-### Trabalhos Futuros
+## 📝 Documentação LaTeX e PlantUML
 
-- Integração com sistemas de transporte público
-- Expansão para detecção de barreiras em ambientes internos
-- Desenvolvimento de rotas acessíveis personalizadas
-- Implementação de realidade aumentada para navegação
-- Criação de índice de acessibilidade por cidade/bairro
+## Como gerar e inserir diagramas PlantUML em LaTeX (TikZ)
+
+### Pré-requisitos
+
+- Java instalado (necessário para rodar o PlantUML)
+- Compilador LaTeX com suporte a TikZ e XeLaTeX:
+  ```bash
+  sudo apt-get update && sudo apt-get install -y texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-lang-portuguese texlive-xetex
+  ```
+- O arquivo `plantuml.jar` está em `wiki/bin/plantuml.jar`
+- Os arquivos `.puml` dos diagramas estão em `wiki/uml/`
+
+### Gerando diagramas em LaTeX (TikZ)
+
+Para cada diagrama `.puml` que deseja inserir no LaTeX, execute:
+
+```bash
+cd wiki
+java -jar bin/plantuml.jar -tlatex:nopreamble uml/NOME_DO_DIAGRAMA.puml
+```
+
+Isso irá gerar um arquivo `NOME_DO_DIAGRAMA.tex` na mesma pasta do `.puml`.
+
+### Exemplo de inclusão no arquivo LaTeX principal
+
+No preâmbulo do seu arquivo `.tex`, adicione:
+
+```latex
+\usepackage{tikz}
+```
+
+E para inserir o diagrama no local desejado:
+
+```latex
+\begin{figure}[H]
+\centering
+\input{wiki/uml/NOME_DO_DIAGRAMA.tex}
+\caption{Legenda do diagrama}
+\end{figure}
+```
+
+### Observações
+
+- Sempre gere novamente o `.tex` se alterar o `.puml`.
+- O comando `-tlatex:nopreamble` gera apenas o ambiente TikZ, pronto para ser incluído em qualquer documento LaTeX.
+- O compilador recomendado é o `pdflatex`.
+
+## Usando LaTeX Workshop (Visual Studio Code)
+
+A extensão "LaTeX Workshop" para Visual Studio Code facilita editar, compilar e visualizar documentos LaTeX diretamente no editor. Abaixo estão instruções básicas de instalação, requisitos e configuração em português (pt-BR).
+
+### Requisitos
+
+- A única exigência é uma distribuição LaTeX compatível disponível no PATH do sistema. Exemplo recomendado: TeX Live.
+- Alternativas possíveis:
+  - TinyTeX — uma distribuição leve baseada em TeX Live.
+  - MiKTeX — distribuição leve com instalação automática de pacotes. Observação: para que o MiKTeX funcione corretamente com LaTeX Workshop, pode ser necessário ter o Perl instalado no sistema.
+
+Ferramentas úteis (opcionais):
+
+- ChkTeX — linter para projetos LaTeX.
+- latexindent.pl — ferramenta de formatação (requer Perl e alguns módulos Perl; ver documentação oficial).
+
+Saiba mais sobre distribuições e dependências consultando a documentação oficial da extensão.
+
+### Instalação de distribuições LaTeX (exemplos práticos)
+
+Abaixo descrevemos maneiras simples e padronizadas de instalar distribuições LaTeX em Windows e Linux, incluindo MiKTeX e TinyTeX, além de uma referência ao TeX Live.
+
+#### Windows — MiKTeX (recomendado para Windows)
+
+1. Baixe o instalador do MiKTeX em: [https://miktex.org/download](https://miktex.org/download)
+2. Execute o instalador e siga as instruções. Marque a opção para instalar pacotes automaticamente quando solicitado (opcional, mas conveniente).
+3. Verifique se o diretório `miktex/bin` foi adicionado ao PATH (normalmente o instalador faz isso). No prompt do Windows, verifique:
+
+```bash
+where pdflatex
+```
+
+Se não for encontrado, adicione o diretório de binários do MiKTeX ao PATH via as configurações do sistema (Painel de Controle → Sistema → Configurações Avançadas → Variáveis de Ambiente).
+
+Observação: MiKTeX pode requerer Perl para algumas ferramentas opcionais; instale o Strawberry Perl se necessário: [https://strawberryperl.com/](https://strawberryperl.com/)
+
+Alternativas via gerenciadores de pacotes no Windows
+
+- Chocolatey (PowerShell como Administrador):
+
+```powershell
+choco install miktex
+```
+
+- winget (Windows Package Manager):
+
+```powershell
+winget install MiKTeX.MiKTeX
+```
+
+#### Linux — TinyTeX (leve) e TeX Live (completo)
+
+TinyTeX (recomendado quando quiser uma instalação leve baseada em TeX Live)
+
+1. Instale o TinyTeX via R (recomendado) ou via script do projeto:
+
+Usando R (recomendado quando R está disponível):
+
+```r
+# no R
+install.packages('tinytex')
+tinytex::install_tinytex()
+```
+
+Usando o instalador shell:
+
+```bash
+# instala TinyTeX via script (user-local)
+curl -sL "https://yihui.org/tinytex/install-bin-unix.sh" | sh
+```
+
+1. Após a instalação, confirme que `pdflatex` está disponível:
+
+```bash
+which pdflatex
+```
+
+Se necessário, adicione o diretório de binários do TinyTeX ao PATH (o instalador normalmente adiciona em ~/.TinyTeX/bin/\*).
+
+TeX Live (completo)
+
+1. Em distribuições Debian/Ubuntu, instale via apt (modo simples):
+
+```bash
+sudo apt-get update && sudo apt-get install -y texlive-full
+```
+
+Alternativa para instalar TeX Live via install-tl (mais atual):
+
+```bash
+# Baixe o instalador interativo
+wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+tar -xzf install-tl-unx.tar.gz
+cd install-tl-*
+sudo ./install-tl
+```
+
+Esse instalador permite selecionar componentes e atualizar a distribuição. Após instalar via install-tl, adicione o diretório de binários ao PATH (ex.: `/usr/local/texlive/YYYY/bin/x86_64-linux`).
+
+Observação: `texlive-full` é grande; em servidores com espaço limitado, prefira conjuntos menores (por exemplo `texlive-latex-recommended`, `texlive-latex-extra`, `texlive-fonts-recommended`).
+
+2. Verifique a instalação e o PATH:
+
+```bash
+which pdflatex
+pdflatex --version
+```
+
+### Dicas sobre PATH e VS Code
+
+- Após instalar qualquer distribuição, confirme que `pdflatex`, `latexmk` (se usado) e outros binários estão acessíveis no PATH do terminal que abre o VS Code.
+- Se usar Remote - SSH ou Remote - Containers, certifique-se de que o PATH esteja definido em `~/.profile` ou `~/.bash_profile` para que o VS Code remoto herde-o.
+- Como alternativa, defina `env` nas receitas do LaTeX Workshop para apontar diretamente para os executáveis.
+
+### Instalação
+
+1. No VS Code, instale a extensão "LaTeX Workshop" pela Visual Studio Code Marketplace ou pressione Ctrl/Cmd + P e execute:
+
+```
+ext install latex-workshop
+```
+
+2. Reinicie o VS Code se necessário.
+
+### Configurando a variável PATH
+
+Após instalar o TeX Live (ou outra distribuição), adicione o diretório de binários da distribuição ao PATH do sistema (exceto no Windows, onde o instalador normalmente já ajusta o PATH). Se o VS Code não localizar os executáveis LaTeX, isso indica que a variável PATH do sistema não está configurada corretamente.
+
+- Em macOS/Linux, adicione algo como (exemplo para TeX Live):
+
+```
+export PATH=/usr/local/texlive/2024/bin/x86_64-linux:$PATH
+```
+
+- Em sessões remotas (Remote - SSH / Containers) pode ser necessário editar `~/.profile` ou `~/.bash_profile` em vez de `~/.bashrc` para que o VS Code receba a variável PATH.
+
+Observações importantes:
+
+- Sempre reinicie o VS Code (e, quando necessário, o sistema) após alterar o PATH.
+- Se não for possível ajustar o PATH do sistema, você pode sobrescrever o PATH dentro das receitas do LaTeX Workshop usando a propriedade `env` nas configurações da extensão.
+
+### Configurações básicas
+
+Você pode alterar as configurações pelo menu Preferences > Settings do VS Code ou editando diretamente o arquivo `settings.json`. Para configurações por projeto, crie/edite `.vscode/settings.json` na raiz do workspace.
+
+Exemplos úteis de configuração (adicione ao `settings.json` do workspace):
+
+```
+{
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.synctex.afterBuild.enabled": true
+}
+```
+
+Consulte a documentação oficial para detalhes sobre `tools`, `recipes` e outras opções avançadas.
+
+### Uso
+
+- Abra um arquivo `.tex` no VS Code. Use a barra lateral TeX (TeX sidebar) para acessar recursos da extensão: construir (build), visualizar PDF, navegar pela estrutura do documento, visualizar erros e warnings.
+- Para associar um atalho ao painel TeX, vincule uma tecla ao comando `latex-workshop.actions` nas configurações de keybindings.
+
+Funcionalidades principais:
+
+- Construção (build) e visualização de PDF com sincronização source ↔︎ PDF.
+- Exibição de erros e avisos no painel Problems.
+- Navegação por ambientes e seleção rápida de ambientes.
+- Outline do documento e mecanismo de folding (personalizável via `latex-workshop.view.outline.sections`).
+- Navegação e inserção de citações (browser de citações e intellisense para BibTeX).
+
+Se preferir acessar ações comuns pelo menu de contexto (botão direito), ative:
+
+```
+"latex-workshop.showContextMenu": true
+```
+
+### Idiomas suportados
+
+Além de LaTeX clássico, a extensão oferece suporte a LaTeX-Expl3 (LaTeX3). Também há suporte para Sweave, knitr e Weave.jl (.rnw / .jnw). Veja a documentação da extensão para instruções de build específicas para esses formatos.
+
+### Usando Docker
+
+LaTeX Workshop funciona bem com a extensão Remote - Containers do VS Code. Também existe suporte experimental a Docker interno da extensão.
+
+Para usar o modo Docker experimental, configure:
+
+```
+"latex-workshop.docker.enabled": true,
+"latex-workshop.docker.image.latex": "<nome-da-imagem>",
+"latex-workshop.docker.path": "/usr/bin/docker"
+```
+
+Você precisa escolher uma imagem Docker adequada que contenha uma distribuição LaTeX. Alguns usuários preferem imagens baseadas em TeX Live.
+
+### Links e documentação
+
+- Documentação oficial da extensão LaTeX Workshop: [https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)
+- Documentação do projeto (GitHub): [https://github.com/James-Yu/LaTeX-Workshop](https://github.com/James-Yu/LaTeX-Workshop)
+
+```bash
+ext install latex-workshop
+```
+
+Se preferir, instale a extensão pelo Marketplace do VS Code.
+
+```json
+"latex-workshop.showContextMenu": true
+```
+
+### Scripts de instalação fornecidos
+
+Incluí dois scripts utilitários em `scripts/` para facilitar a instalação de uma distribuição LaTeX:
+
+- `scripts/install-latex.ps1` — PowerShell para Windows. Tenta usar `winget` ou `choco` para instalar MiKTeX. Execute em PowerShell como Administrador:
+
+```powershell
+.\scripts\install-latex.ps1
+```
+
+- `scripts/install-latex.sh` — Bash para Linux. Pode instalar TinyTeX (padrão) ou TeX Live via apt:
+
+```bash
+# TinyTeX (padrão)
+./scripts/install-latex.sh --tinytex
+
+# TeX Live (completo)
+./scripts/install-latex.sh --texlive
+```
+
+Após a instalação, confirme com:
+
+```bash
+pdflatex --version
+```
