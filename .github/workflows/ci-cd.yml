@@ -306,10 +306,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Create .env for build
+        run: |
+          # Extrai apenas as variáveis NEXT_PUBLIC_* e BETTER_AUTH_URL da secret
+          echo "${{ secrets.ENV_PRODUCTION }}" | grep -E '^(NEXT_PUBLIC_|BETTER_AUTH_URL)' > apps/web/.env.production || true
+          echo "✅ Variáveis de ambiente configuradas para build"
+
       - name: Build Web
         run: pnpm --filter web build
-        env:
-          NEXT_PUBLIC_API_URL: /api
 
       - name: List Web Build Output (debug)
         run: |
@@ -437,8 +441,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/tickets-${{ matrix.service }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/tickets-${{ matrix.service }}:buildcache,mode=max
-          build-args: |
-            NEXT_PUBLIC_API_URL=/api
 
   # ============================================================================
   # JOB 5: DEPLOY (MANUAL)
@@ -446,8 +448,6 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    # Remove a dependência de docker quando for deploy manual
-    needs: []
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
     environment: production
 
