@@ -19,7 +19,7 @@ COPY apps/api-java/target/api-java-*.jar app.jar
 USER spring:spring
 
 # Expõe porta padrão
-EXPOSE 3000
+EXPOSE 8080
 
 # Configuração de ambiente para produção
 ENV SPRING_PROFILES_ACTIVE=prod \
@@ -27,7 +27,7 @@ ENV SPRING_PROFILES_ACTIVE=prod \
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/actuator/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
 # Comando de inicialização
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
