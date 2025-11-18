@@ -77,6 +77,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: |
+            .turbo
+            apps/**/.turbo
+            packages/**/.turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Cache Jest
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/.jest-cache
+            apps/web/coverage
+          key: ${{ runner.os }}-jest-${{ hashFiles('apps/web/**/*.{ts,tsx,js,jsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-jest-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -213,6 +234,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
+      - name: Cache Maven build
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/api-java/target/classes
+            apps/api-java/target/test-classes
+            apps/api-java/target/generated-sources
+          key: ${{ runner.os }}-maven-build-${{ hashFiles('apps/api-java/src/**/*.java', 'apps/api-java/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-build-
+
       - name: Run Tests with Reports
         working-directory: apps/api-java
         env:
@@ -280,6 +312,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Configure Git
+        run: |
+          git config --global init.defaultBranch main
+          git config --global advice.detachedHead false
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -306,10 +343,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Next.js Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('apps/web/pnpm-lock.yaml') }}-${{ hashFiles('apps/web/**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('apps/web/pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-
+
+      - name: Create .env for build
+        run: |
+          # Extrai apenas as variáveis NEXT_PUBLIC_* e BETTER_AUTH_URL da secret
+          echo "${{ secrets.ENV_PRODUCTION }}" | grep -E '^(NEXT_PUBLIC_|BETTER_AUTH_URL)' > apps/web/.env.production || true
+          echo "✅ Variáveis de ambiente configuradas para build"
+
       - name: Build Web
         run: pnpm --filter web build
-        env:
-          NEXT_PUBLIC_API_URL: /api
 
       - name: List Web Build Output (debug)
         run: |
@@ -331,8 +382,9 @@ jobs:
           name: web-build
           path: apps/web/.next/
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 1
           include-hidden-files: true
+          compression-level: 9
 
       - name: Setup JDK 25
         uses: actions/setup-java@v4
@@ -437,8 +489,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/tickets-${{ matrix.service }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/tickets-${{ matrix.service }}:buildcache,mode=max
-          build-args: |
-            NEXT_PUBLIC_API_URL=/api
 
   # ============================================================================
   # JOB 5: DEPLOY (MANUAL)
@@ -446,8 +496,6 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    # Remove a dependência de docker quando for deploy manual
-    needs: []
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
     environment: production
 
@@ -465,20 +513,20 @@ jobs:
             echo "❌ ERRO: EC2_SSH_KEY não está configurado"
             exit 1
           fi
-          
+
           if [ -z "$DEPLOY_HOST" ]; then
             echo "❌ ERRO: EC2_HOST não está configurado"
             exit 1
           fi
-          
+
           echo "🔑 Configurando SSH key..."
           mkdir -p ~/.ssh
           echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
+
           echo "🔍 Adicionando host $DEPLOY_HOST ao known_hosts..."
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
-          
+
           echo "✅ SSH configurado com sucesso"
 
       - name: Compute lowercase repo owner
@@ -528,7 +576,7 @@ jobs:
 
           # Cria arquivo temporário local com o conteúdo de ENV_PRODUCTION
           echo "$ENV_PRODUCTION" > /tmp/env_production_temp
-          
+
           # Copia o arquivo para o servidor
           scp -o StrictHostKeyChecking=no \
             /tmp/env_production_temp \

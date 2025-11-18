@@ -17,6 +17,8 @@ const config: Config = {
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
     },
+    // Cache configuration
+    cacheDirectory: '<rootDir>/.jest-cache',
     // Collect coverage from all relevant files
     collectCoverageFrom: [
         'app/**/*.{js,jsx,ts,tsx}',

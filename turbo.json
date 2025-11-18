@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalDependencies": [".env", "tsconfig.json"],
   "globalEnv": [
     "NODE_ENV",
     "PORT",
@@ -71,7 +72,17 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**", "apps/api-java/target/surefire-reports/**"],
+      "outputs": [
+        "coverage/**",
+        "apps/web/.jest-cache/**",
+        "apps/web/reports/**",
+        "apps/api-java/target/surefire-reports/**"
+      ],
+      "inputs": [
+        "**/*.{ts,tsx,js,jsx}",
+        "!**/*.test.{ts,tsx,js,jsx}",
+        "!**/*.spec.{ts,tsx,js,jsx}"
+      ],
       "env": [
         "DATABASE_URL",
         "SPRING_DATASOURCE_URL",

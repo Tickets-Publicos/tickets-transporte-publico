@@ -1,0 +1,78 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Documentation
+README.md
+CONTRIBUTING.md
+CHANGELOG.md
+docs/
+wiki/
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.test.js
+**/*.spec.ts
+**/*.spec.tsx
+**/*.spec.js
+**/test-results/
+**/coverage/
+**/reports/
+**/__tests__/
+**/__mocks__/
+jest.config.*
+jest.setup.*
+
+# Node
+**/node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Next.js (exceto o build final)
+apps/web/.next/cache
+apps/web/.next/diagnostics
+apps/web/.turbo
+apps/web/out/
+
+# Java/Maven (excluir tudo EXCETO os JARs finais)
+apps/api-java/target/classes/
+apps/api-java/target/test-classes/
+apps/api-java/target/generated-sources/
+apps/api-java/target/generated-test-sources/
+apps/api-java/target/maven-status/
+apps/api-java/target/maven-archiver/
+apps/api-java/target/surefire-reports/
+apps/api-java/target/failsafe-reports/
+apps/api-java/target/site/
+apps/api-java/.mvn/
+apps/api-java/mvnw
+apps/api-java/mvnw.cmd
+apps/api-java/mvnw.ps1
+**/.m2/
+**/*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.local
+
+# Temp files
+*.tmp
+*.temp
+.cache/
