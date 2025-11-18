@@ -2,7 +2,7 @@ import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { customSession } from "better-auth/plugins";
 import jwt from "jsonwebtoken";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://api:8080";
 const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET || "your-super-secret-key-change-this-in-production-min-32-chars";
 
 interface UserInfo {
@@ -43,7 +43,7 @@ const options = {
   },
 
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    process.env.BETTER_AUTH_URL || "http://web:3000",
   ],
 
   // OAuth Providers

@@ -2,7 +2,7 @@
 
 import { useBackendToken } from "@/hooks/use-backend-token";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 /**
  * Hook para fazer requisições autenticadas ao backend Java

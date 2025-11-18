@@ -1,7 +1,7 @@
 // tickets-transporte-publico/apps/web/lib/api/config.ts
 import { getBackendToken } from '../auth.client'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1'
 
 export const apiConfig = {
   baseURL: API_BASE_URL,
