@@ -21,7 +21,15 @@ let tokenExpiry: number = 0;
 // Helper para obter o token JWT da sessão atual (com cache)
 export async function getBackendToken(): Promise<string | null> {
   try {
-    // Verifica se há um token em cache válido
+    // Primeiro verifica se há token no localStorage (para autenticação com email/senha)
+    if (typeof window !== "undefined") {
+      const localToken = localStorage.getItem("auth_token");
+      if (localToken) {
+        return localToken;
+      }
+    }
+
+    // Verifica se há um token em cache válido (para OAuth)
     if (cachedToken && Date.now() < tokenExpiry) {
       return cachedToken;
     }
