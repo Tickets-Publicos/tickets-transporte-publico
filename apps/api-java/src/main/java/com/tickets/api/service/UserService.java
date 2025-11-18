@@ -19,6 +19,56 @@ import java.util.stream.Collectors;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final PasswordService passwordService;
+
+  /**
+   * Registra um novo usuário com email e senha
+   */
+  @Transactional
+  public UserResponseDto registerWithEmailPassword(String name, String email, String password) {
+    // Verificar se email já existe
+    if (userRepository.existsByEmail(email)) {
+      throw new ConflictException("Email já cadastrado");
+    }
+
+    // Gerar salt e hash da senha
+    String salt = passwordService.generateSalt();
+    String passwordHash = passwordService.hashPassword(password, salt);
+
+    // Criar usuário
+    User user = User.builder()
+        .email(email)
+        .name(name)
+        .role(UserRole.PEDESTRIAN)
+        .passwordHash(passwordHash)
+        .passwordSalt(salt)
+        .build();
+
+    User savedUser = userRepository.save(user);
+    return mapToDto(savedUser);
+  }
+
+  /**
+   * Autentica usuário com email e senha
+   */
+  @Transactional(readOnly = true)
+  public UserResponseDto authenticateWithEmailPassword(String email, String password) {
+    // Buscar usuário por email
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException("Email ou senha inválidos"));
+
+    // Verificar se o usuário tem senha cadastrada
+    if (user.getPasswordHash() == null || user.getPasswordSalt() == null) {
+      throw new ResourceNotFoundException("Email ou senha inválidos");
+    }
+
+    // Verificar senha
+    if (!passwordService.verifyPassword(password, user.getPasswordSalt(), user.getPasswordHash())) {
+      throw new ResourceNotFoundException("Email ou senha inválidos");
+    }
+
+    return mapToDto(user);
+  }
 
   @Transactional
   public UserResponseDto create(CreateUserDto dto) {

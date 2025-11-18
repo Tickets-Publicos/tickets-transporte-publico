@@ -38,6 +38,13 @@ public class User {
     @Builder.Default
     private UserRole role = UserRole.PEDESTRIAN;
 
+    // Campos para autenticação com email/senha
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    @Column(name = "password_salt")
+    private String passwordSalt;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
