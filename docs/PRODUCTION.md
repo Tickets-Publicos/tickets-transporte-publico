@@ -38,7 +38,7 @@ Edite `.env.production`:
 JWT_SECRET="seu-secret-aqui"
 
 # URLs
-NEXT_PUBLIC_APP_URL=https://seu-dominio.com
+BETTER_AUTH_URL=https://seu-dominio.com
 NEXT_PUBLIC_API_URL=https://seu-dominio.com/api/v1
 
 # OAuth (configurar nos consoles)

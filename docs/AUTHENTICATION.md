@@ -103,7 +103,7 @@ Este projeto usa **Better Auth** no Next.js para autenticação OAuth (Google, G
 ```env
 # URLs
 NEXT_PUBLIC_API_URL=http://localhost:8080/api
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
 
 # JWT Secret (DEVE SER O MESMO NO BACKEND!)
 AUTH_SECRET=your-super-secret-key-change-this-in-production-min-32-chars

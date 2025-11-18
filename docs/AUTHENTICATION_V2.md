@@ -303,7 +303,7 @@ AUTH_SECRET=your-secret-key-change-in-production-min-32-chars
 JWT_SECRET=your-secret-key-change-in-production-min-32-chars
 
 NEXT_PUBLIC_API_URL=http://localhost:8080
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
 
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
