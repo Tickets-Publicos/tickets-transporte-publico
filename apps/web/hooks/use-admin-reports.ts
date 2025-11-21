@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+import { apiRequest, ApiError } from "../lib/api/config";
 
 export interface Report {
   id: string;
@@ -41,46 +40,19 @@ export function useAdminReports() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getAuthToken = async () => {
-    // Buscar o token do backend JWT gerado pelo auth.server.ts
-    const response = await fetch("/api/auth/token", {
-      credentials: "include",
-    });
-    
-    if (!response.ok) {
-      throw new Error("Não autenticado");
-    }
-    
-    const { token } = await response.json();
-    return token;
-  };
-
   const fetchPendingReports = useCallback(async (page = 1, limit = 10): Promise<PageResponse<Report>> => {
     setLoading(true);
     setError(null);
     
     try {
-      const token = await getAuthToken();
-      const response = await fetch(
-        `${API_URL}/reports/pending-review?page=${page}&limit=${limit}`,
-        {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const data = await apiRequest<PageResponse<Report>>(
+        `/reports/pending-review?page=${page}&limit=${limit}`
       );
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error("Acesso negado. Você precisa ser administrador.");
-        }
-        throw new Error("Erro ao buscar reportes pendentes");
-      }
-
-      const data = await response.json();
       return data;
     } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        throw new Error("Acesso negado. Você precisa ser administrador.");
+      }
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       setError(message);
       throw err;
@@ -94,26 +66,15 @@ export function useAdminReports() {
     setError(null);
     
     try {
-      const token = await getAuthToken();
-      const response = await fetch(`${API_URL}/reports/${reportId}/approve`, {
+      const result = await apiRequest<Report>(`/reports/${reportId}/approve`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error("Acesso negado. Você precisa ser administrador.");
-        }
-        throw new Error("Erro ao aprovar reporte");
-      }
-
-      const result = await response.json();
       return result;
     } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        throw new Error("Acesso negado. Você precisa ser administrador.");
+      }
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       setError(message);
       throw err;
@@ -127,26 +88,15 @@ export function useAdminReports() {
     setError(null);
     
     try {
-      const token = await getAuthToken();
-      const response = await fetch(`${API_URL}/reports/${reportId}/reject`, {
+      const result = await apiRequest<Report>(`/reports/${reportId}/reject`, {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error("Acesso negado. Você precisa ser administrador.");
-        }
-        throw new Error("Erro ao rejeitar reporte");
-      }
-
-      const result = await response.json();
       return result;
     } catch (err) {
+      if (err instanceof ApiError && err.status === 403) {
+        throw new Error("Acesso negado. Você precisa ser administrador.");
+      }
       const message = err instanceof Error ? err.message : "Erro desconhecido";
       setError(message);
       throw err;
