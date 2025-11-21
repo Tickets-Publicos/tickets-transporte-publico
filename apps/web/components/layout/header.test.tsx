@@ -11,6 +11,18 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockUseAuth(),
 }))
 
+// Mock next/navigation's useRouter so tests using router won't throw
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn().mockResolvedValue(undefined),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  }),
+}))
+
 describe('Header', () => {
   beforeEach(() => {
     mockSignOut.mockClear()
