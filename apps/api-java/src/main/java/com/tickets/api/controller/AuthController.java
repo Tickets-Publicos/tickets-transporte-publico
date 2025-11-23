@@ -5,7 +5,7 @@ import com.tickets.api.dto.LoginRequest;
 import com.tickets.api.dto.RegisterRequest;
 import com.tickets.api.dto.UserSyncRequest;
 import com.tickets.api.dto.user.UserResponseDto;
-import com.tickets.api.service.JwtService;
+// import com.tickets.api.service.JwtService;
 import com.tickets.api.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -26,8 +26,6 @@ public class AuthController {
   @Autowired
   private UserService userService;
 
-  @Autowired
-  private JwtService jwtService;
 
   @Value("${jwt.secret}")
   private String jwtSecret;
@@ -103,24 +101,8 @@ public class AuthController {
           request.getPassword()
       );
 
-      // Gera token JWT para o usuário
-      String token = jwtService.generateToken(
-          user.getId(),
-          user.getEmail(),
-          user.getName(),
-          user.getRole().toString()
-      );
-
-      AuthResponse response = AuthResponse.builder()
-          .token(token)
-          .userId(user.getId())
-          .email(user.getEmail())
-          .name(user.getName())
-          .role(user.getRole().toString())
-          .build();
-
-      System.out.println("[AuthController] User registered successfully: " + user.getId());
-      return ResponseEntity.ok(response);
+        System.out.println("[AuthController] User registered successfully: " + user.getId());
+        return ResponseEntity.ok(user);
     } catch (Exception e) {
       System.err.println("[AuthController] Error registering user: " + e.getMessage());
       return ResponseEntity.status(400)
@@ -141,24 +123,8 @@ public class AuthController {
           request.getPassword()
       );
 
-      // Gera token JWT para o usuário
-      String token = jwtService.generateToken(
-          user.getId(),
-          user.getEmail(),
-          user.getName(),
-          user.getRole().toString()
-      );
-
-      AuthResponse response = AuthResponse.builder()
-          .token(token)
-          .userId(user.getId())
-          .email(user.getEmail())
-          .name(user.getName())
-          .role(user.getRole().toString())
-          .build();
-
-      System.out.println("[AuthController] User authenticated successfully: " + user.getId());
-      return ResponseEntity.ok(response);
+        System.out.println("[AuthController] User authenticated successfully: " + user.getId());
+        return ResponseEntity.ok(user);
     } catch (Exception e) {
       System.err.println("[AuthController] Error authenticating user: " + e.getMessage());
       return ResponseEntity.status(401)
