@@ -26,7 +26,6 @@ public class AuthController {
   @Autowired
   private UserService userService;
 
-
   @Value("${jwt.secret}")
   private String jwtSecret;
 
@@ -94,15 +93,14 @@ public class AuthController {
   public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
     try {
       System.out.println("[AuthController] register called for email: " + request.getEmail());
-      
+
       UserResponseDto user = userService.registerWithEmailPassword(
           request.getName(),
           request.getEmail(),
-          request.getPassword()
-      );
+          request.getPassword());
 
-        System.out.println("[AuthController] User registered successfully: " + user.getId());
-        return ResponseEntity.ok(user);
+      System.out.println("[AuthController] User registered successfully: " + user.getId());
+      return ResponseEntity.ok(user);
     } catch (Exception e) {
       System.err.println("[AuthController] Error registering user: " + e.getMessage());
       return ResponseEntity.status(400)
@@ -117,14 +115,13 @@ public class AuthController {
   public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
     try {
       System.out.println("[AuthController] login called for email: " + request.getEmail());
-      
+
       UserResponseDto user = userService.authenticateWithEmailPassword(
           request.getEmail(),
-          request.getPassword()
-      );
+          request.getPassword());
 
-        System.out.println("[AuthController] User authenticated successfully: " + user.getId());
-        return ResponseEntity.ok(user);
+      System.out.println("[AuthController] User authenticated successfully: " + user.getId());
+      return ResponseEntity.ok(user);
     } catch (Exception e) {
       System.err.println("[AuthController] Error authenticating user: " + e.getMessage());
       return ResponseEntity.status(401)
