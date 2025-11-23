@@ -20,11 +20,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { signIn } from "@/lib/auth.client";
+import { signIn, signUp } from "@/lib/auth.client";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,44 +64,26 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginEmail,
-          password: loginPassword,
-        }),
+      // Usa better-auth para autenticar por email/senha.
+      await signIn.email?.({
+        email: loginEmail,
+        password: loginPassword,
+        callbackURL: "/dashboard",
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Email ou senha inválidos");
-      }
-
-      const data = await response.json();
-      
-      // Armazena o token no localStorage
-      localStorage.setItem("auth_token", data.token);
-      localStorage.setItem("user_id", data.userId);
-      localStorage.setItem("user_email", data.email);
-      localStorage.setItem("user_name", data.name);
-      localStorage.setItem("user_role", data.role);
+      // Redireciona para o dashboard (caso não seja automático)
+      router.push("/dashboard");
+      router.refresh();
 
       toast({
         title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${data.name}!`,
+        description: `Bem-vindo!`,
       });
-
-      // Redireciona para o dashboard
-      router.push("/dashboard");
-      router.refresh();
     } catch (err: any) {
       console.error("Login error:", err);
       toast({
         title: "Erro no login",
-        description: err.message || "Ocorreu um erro ao tentar fazer login.",
+        description: err?.message || "Ocorreu um erro ao tentar fazer login.",
         variant: "destructive",
       });
     } finally {
@@ -116,45 +96,27 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: registerName,
-          email: registerEmail,
-          password: registerPassword,
-        }),
+      // Usa better-auth signUp para registrar e criar a sessão.
+      await signUp.email?.({
+        name: registerName,
+        email: registerEmail,
+        password: registerPassword,
+        callbackURL: "/dashboard",
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Erro ao criar conta");
-      }
-
-      const data = await response.json();
-      
-      // Armazena o token no localStorage
-      localStorage.setItem("auth_token", data.token);
-      localStorage.setItem("user_id", data.userId);
-      localStorage.setItem("user_email", data.email);
-      localStorage.setItem("user_name", data.name);
-      localStorage.setItem("user_role", data.role);
+      // Redireciona para o dashboard (caso não seja automático)
+      router.push("/dashboard");
+      router.refresh();
 
       toast({
         title: "Conta criada com sucesso!",
-        description: `Bem-vindo, ${data.name}!`,
+        description: `Bem-vindo!`,
       });
-
-      // Redireciona para o dashboard
-      router.push("/dashboard");
-      router.refresh();
     } catch (err: any) {
       console.error("Register error:", err);
       toast({
         title: "Erro ao criar conta",
-        description: err.message || "Ocorreu um erro ao tentar criar sua conta.",
+        description: err?.message || "Ocorreu um erro ao tentar criar sua conta.",
         variant: "destructive",
       });
     } finally {
