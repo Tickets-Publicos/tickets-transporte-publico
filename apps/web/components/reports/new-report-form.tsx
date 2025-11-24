@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { reportsApi } from "@/lib/api/reports";
 import {
   reportFormSchema,
@@ -29,7 +29,6 @@ export function NewReportForm({ user }: NewReportFormProps) {
   const [reportId, setReportId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const { toast } = useToast();
 
   const methods = useForm<ReportFormData>({
     resolver: zodResolver(reportFormSchema),
@@ -88,16 +87,13 @@ export function NewReportForm({ user }: NewReportFormProps) {
       setReportId(result.id);
       setCurrentStep(4);
 
-      toast({
-        title: "Reporte enviado com sucesso!",
+      toast.success("Reporte enviado com sucesso!", {
         description: "Seu reporte foi registrado e será analisado em breve.",
       });
     } catch (error) {
       console.error("Erro ao enviar reporte:", error);
-      toast({
-        title: "Erro ao enviar reporte",
+      toast.error("Erro ao enviar reporte", {
         description: "Ocorreu um erro ao enviar o reporte. Tente novamente.",
-        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);

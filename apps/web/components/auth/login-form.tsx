@@ -16,12 +16,11 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signIn, signUp } from "@/lib/auth.client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const router = useRouter();
 
   // Estados para login com email/senha
@@ -45,10 +44,8 @@ export function LoginForm() {
       // O Better Auth vai redirecionar automaticamente
     } catch (err) {
       console.error("Login error:", err);
-      toast({
-        title: "Erro no login",
+      toast.error("Erro no login", {
         description: "Ocorreu um erro ao tentar fazer login.",
-        variant: "destructive",
       });
       setIsLoading(false);
     }
@@ -60,29 +57,39 @@ export function LoginForm() {
 
     try {
       // Usa better-auth para autenticar por email/senha.
-      await signIn.email?.({
+      const res = await signIn.email?.({
         email: loginEmail,
         password: loginPassword,
         callbackURL: "/dashboard",
       });
 
+      if (res?.error) {
+        console.error("Login error:", res.error);
+        
+        let errorMessage = "Ocorreu um erro ao tentar fazer login.";
+        if (res.error.message === "Invalid email or password") {
+            errorMessage = "Email ou senha incorretos.";
+        } else if (res.error.message) {
+            errorMessage = res.error.message;
+        }
+
+        toast.error("Erro no login", {
+          description: errorMessage,
+        });
+        return; // Retorna para não redirecionar
+      }
+
       // Redireciona para o dashboard (caso não seja automático)
       router.push("/dashboard");
       router.refresh();
 
-      toast({
-        title: "Login realizado com sucesso!",
+      toast.success("Login realizado com sucesso!", {
         description: `Bem-vindo!`,
       });
     } catch (err) {
-      console.error("Login error:", err);
-      toast({
-        title: "Erro no login",
-        description:
-          typeof err === "object" && err !== null && "message" in err
-            ? (err as { message?: string }).message
-            : "Ocorreu um erro ao tentar fazer login.",
-        variant: "destructive",
+      console.error("Login unexpected error:", err);
+      toast.error("Erro no login", {
+        description: "Ocorreu um erro inesperado.",
       });
     } finally {
       setIsLoading(false);
@@ -95,30 +102,39 @@ export function LoginForm() {
 
     try {
       // Usa better-auth signUp para registrar e criar a sessão.
-      await signUp.email?.({
+      const res = await signUp.email?.({
         name: registerName,
         email: registerEmail,
         password: registerPassword,
         callbackURL: "/dashboard",
       });
 
+      if (res?.error) {
+         console.error("Register error:", res.error);
+         
+         let errorMessage = "Ocorreu um erro ao tentar criar sua conta.";
+         // Tenta traduzir ou usar a mensagem do backend
+         if (res.error.message) {
+             errorMessage = res.error.message;
+         }
+
+         toast.error("Erro ao criar conta", {
+          description: errorMessage,
+        });
+        return;
+      }
+
       // Redireciona para o dashboard (caso não seja automático)
       router.push("/dashboard");
       router.refresh();
 
-      toast({
-        title: "Conta criada com sucesso!",
+      toast.success("Conta criada com sucesso!", {
         description: `Bem-vindo!`,
       });
     } catch (err) {
-      console.error("Register error:", err);
-      toast({
-        title: "Erro ao criar conta",
-        description:
-          typeof err === "object" && err !== null && "message" in err
-            ? (err as { message?: string }).message
-            : "Ocorreu um erro ao tentar criar sua conta.",
-        variant: "destructive",
+      console.error("Register unexpected error:", err);
+      toast.error("Erro ao criar conta", {
+        description: "Ocorreu um erro inesperado.",
       });
     } finally {
       setIsLoading(false);
