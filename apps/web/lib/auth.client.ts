@@ -19,7 +19,7 @@ let tokenExpiry: number = 0;
 // Helper para obter o token JWT da sessão atual (com cache)
 export async function getBackendToken(): Promise<string | null> {
   try {
-    // Verifica se há um token em cache válido
+    // Verifica se há um token em cache válido (para OAuth)
     if (cachedToken && Date.now() < tokenExpiry) {
       return cachedToken;
     }

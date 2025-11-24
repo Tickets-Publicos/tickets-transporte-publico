@@ -2,6 +2,7 @@ package com.tickets.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tickets.api.dto.UserSyncRequest;
+import com.tickets.api.dto.LoginRequest;
 import com.tickets.api.dto.user.UserResponseDto;
 import com.tickets.api.model.enums.UserRole;
 import com.tickets.api.service.UserService;
@@ -163,5 +164,29 @@ class AuthControllerTest {
     void getCurrentUser_withoutAttributes_shouldReturn401() throws Exception {
         mockMvc.perform(get("/auth/me"))
                 .andExpect(status().isUnauthorized());
+    }
+    @Test
+    void login_withValidCredentials_shouldReturn200() throws Exception {
+        LoginRequest request = new LoginRequest();
+        request.setEmail("test@example.com");
+        request.setPassword("password123");
+
+        UserResponseDto responseDto = new UserResponseDto();
+        responseDto.setId("u1");
+        responseDto.setEmail("test@example.com");
+        responseDto.setName("Test User");
+        responseDto.setRole(UserRole.PEDESTRIAN);
+
+        when(userService.authenticateWithEmailPassword(eq("test@example.com"), eq("password123")))
+                .thenReturn(responseDto);
+
+        mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("u1"))
+                .andExpect(jsonPath("$.email").value("test@example.com"));
+
+        verify(userService, times(1)).authenticateWithEmailPassword(eq("test@example.com"), eq("password123"));
     }
 }

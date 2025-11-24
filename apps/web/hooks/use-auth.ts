@@ -4,6 +4,7 @@
 import { useSession, signOut as betterAuthSignOut, clearTokenCache } from "@/lib/auth.client";
 import type { User } from "@/lib/api/types";
 import { UserRole } from "@/lib/api/types";
+import { useRouter } from "next/navigation";
 
 // Tipo do usuário do Better Auth incluindo o role customizado
 interface BetterAuthUser {
@@ -17,6 +18,7 @@ interface BetterAuthUser {
 
 export function useAuth() {
   const { data: session, isPending } = useSession();
+  const router = useRouter();
 
   // Converte a sessão do Better Auth (que já tem TODOS os dados do backend)
   // para o tipo User esperado pelos componentes
@@ -32,8 +34,13 @@ export function useAuth() {
 
   // Função de logout que limpa o cache do token
   const signOut = async () => {
+    // Limpa Better Auth
     clearTokenCache();
     await betterAuthSignOut();
+    
+    // Redireciona para home
+    router.push("/");
+    router.refresh();
   };
 
   return {

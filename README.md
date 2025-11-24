@@ -171,13 +171,32 @@ tickets-transporte-publico/
 
 - **Backend**: NestJS, Prisma, PostgreSQL
 - **Frontend**: Next.js 15, React, Tailwind CSS, shadcn/ui
-- **Infraestrutura**: Docker, Nginx, AWS EC2
+- **Infraestrutura**: Docker Compose, Nginx, Armazenamento Local
 - **CI/CD**: GitHub Actions
 - **Monorepo**: Turborepo, pnpm workspaces
 
 ### Diagramas e Documentação
 
 A documentação técnica completa, incluindo diagramas UML e design do sistema, está disponível na pasta `wiki/`.
+
+### 🔐 Autenticação Híbrida
+
+O projeto utiliza uma abordagem inovadora de autenticação híbrida:
+
+- **Next.js (Frontend/Proxy)**: Gerencia a sessão do usuário e cookies via **Better Auth**.
+- **Java (Backend)**: Responsável pela validação real das credenciais e persistência no banco de dados.
+- **Fluxo**: O Next.js intercepta o login, valida com o Java via API interna, e se aprovado, cria a sessão. Isso une a segurança do Java com a agilidade do Next.js.
+
+---
+
+## 🔮 Roadmap e Trabalhos Futuros
+
+Este projeto está em constante evolução. Aqui estão os próximos passos planejados:
+
+- [ ] **Integração com IA**: Análise automática de relatos para classificação e priorização.
+- [ ] **App Mobile**: Desenvolvimento de aplicativo nativo/híbrido para facilitar o envio de relatos em campo.
+- [ ] **Painel Administrativo**: Interface completa para gestão de locais (CRUD) e moderação.
+- [ ] **Integração com APIs Públicas**: Sincronização automática de locais com bases oficiais (ex: SPTrans).
 
 ---
 

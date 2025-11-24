@@ -1,5 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { customSession } from "better-auth/plugins";
+import { createAuthMiddleware, APIError } from "better-auth/api";
 import jwt from "jsonwebtoken";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://api:8080";
@@ -59,6 +60,27 @@ const options = {
     microsoft: {
       clientId: process.env.MICROSOFT_CLIENT_ID!,
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
+    },
+  },
+
+  // Email & Password Provider (Delegado para o Backend Java)
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false,
+    password: {
+      verify: async ({ password, hash }: { password: string; hash: string }) => {
+        // Se a senha for o token mágico injetado pelo hook 'before.signInEmail',
+        // significa que a autenticação já foi realizada com sucesso no Java.
+        if (password === "__VERIFIED_BY_JAVA__") {
+          console.log("[Auth] Magic token detected. Skipping local verification.");
+          return true;
+        }
+
+        // Fallback: Se por algum motivo o hook falhar ou não for chamado,
+        // tentamos verificar normalmente (o que provavelmente falhará sem DB).
+        console.log("[Auth] Standard verification triggered (should be skipped).");
+        return false; 
+      },
     },
   },
 } satisfies BetterAuthOptions;
@@ -137,17 +159,108 @@ export const auth = betterAuth({
       }
     },
   },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      const path = ctx.path; 
+      
+      console.log("[Auth Hook] DEBUG: Hook triggered via createAuthMiddleware.");
+      console.log("[Auth Hook] DEBUG: Path:", path);
+
+      // Intercepta Registro
+      if (path?.includes("/sign-up/email")) {
+        console.log("[Auth Hook] Intercepting signUpEmail...");
+        const body = ctx.body as any;
+        const { email, password, name } = body;
+
+        try {
+          console.log("[Auth Hook] Registering user in Java Backend:", email);
+          const response = await fetch(`${API_URL}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, name }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[Auth Hook] Java Registration Failed:", errorText);
+            
+            let message = errorText;
+            try {
+                const json = JSON.parse(errorText);
+                if (json.message) message = json.message;
+                else if (json.error) message = json.error;
+            } catch (e) {}
+            
+            return new Response(JSON.stringify({ message }), { 
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
+          }
+
+          const javaUser = await response.json();
+          console.log("[Auth Hook] Java Registration Success:", javaUser.id);
+        } catch (error) {
+          console.error("[Auth Hook] Error in signUpEmail hook:", error);
+          return new Response(JSON.stringify({ message: "Internal Server Error during registration" }), { 
+              status: 500,
+              headers: { "Content-Type": "application/json" }
+          });
+        }
+      }
+
+      // Intercepta Login
+      if (path?.includes("/sign-in/email")) {
+        console.log("[Auth Hook] Intercepting signInEmail...");
+        const body = ctx.body as any;
+        const { email, password } = body;
+
+        try {
+          console.log("[Auth Hook] Verifying credentials with Java Backend:", email);
+          const response = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[Auth Hook] Java Login Failed:", errorText);
+            
+            let message = "Invalid email or password";
+            try {
+                const json = JSON.parse(errorText);
+                if (json.message) message = json.message;
+                else if (json.error) message = json.error;
+            } catch (e) {}
+
+            return new Response(JSON.stringify({ message }), { 
+                status: 401,
+                headers: { "Content-Type": "application/json" }
+            });
+          }
+
+          const javaUser = await response.json();
+          console.log("[Auth Hook] Java Login Success:", javaUser.id);
+
+          // SEGREDO: Injetamos um token mágico na senha.
+          body.password = "__VERIFIED_BY_JAVA__";
+          
+        } catch (error) {
+          console.error("[Auth Hook] Error in signInEmail hook:", error);
+          return new Response(JSON.stringify({ message: "Internal Server Error during login" }), { 
+              status: 500,
+              headers: { "Content-Type": "application/json" }
+          });
+        }
+      }
+    }),
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;
 
 // Função para notificar o backend Java sobre novo usuário
 async function notifyBackendNewUser(user: UserInfo) {
-  console.log("[Auth] notifyBackendNewUser called with:", {
-    apiUrl: API_URL,
-    userId: user.id,
-    userEmail: user.email,
-  });
 
   try {
     const url = `${API_URL}/auth/sync-user`;

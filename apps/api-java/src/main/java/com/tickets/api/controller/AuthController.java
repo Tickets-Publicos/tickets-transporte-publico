@@ -1,8 +1,13 @@
 package com.tickets.api.controller;
 
+import com.tickets.api.dto.AuthResponse;
+import com.tickets.api.dto.LoginRequest;
+import com.tickets.api.dto.RegisterRequest;
 import com.tickets.api.dto.UserSyncRequest;
+import com.tickets.api.dto.user.UserResponseDto;
 import com.tickets.api.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- * Controller para sincronização de usuários OAuth do Next.js com o backend
+ * Controller para autenticação (OAuth e email/senha)
  */
 @RestController
 @RequestMapping("/auth")
@@ -78,5 +83,48 @@ public class AuthController {
     return ResponseEntity.ok(Map.of(
         "userId", userId,
         "email", email));
+  }
+
+  /**
+   * Endpoint para registro de usuário com email e senha
+   */
+  @PostMapping("/register")
+  public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    try {
+      System.out.println("[AuthController] register called for email: " + request.getEmail());
+
+      UserResponseDto user = userService.registerWithEmailPassword(
+          request.getName(),
+          request.getEmail(),
+          request.getPassword());
+
+      System.out.println("[AuthController] User registered successfully: " + user.getId());
+      return ResponseEntity.ok(user);
+    } catch (Exception e) {
+      System.err.println("[AuthController] Error registering user: " + e.getMessage());
+      return ResponseEntity.status(400)
+          .body(Map.of("error", e.getMessage()));
+    }
+  }
+
+  /**
+   * Endpoint para login com email e senha
+   */
+  @PostMapping("/login")
+  public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+    try {
+      System.out.println("[AuthController] login called for email: " + request.getEmail());
+
+      UserResponseDto user = userService.authenticateWithEmailPassword(
+          request.getEmail(),
+          request.getPassword());
+
+      System.out.println("[AuthController] User authenticated successfully: " + user.getId());
+      return ResponseEntity.ok(user);
+    } catch (Exception e) {
+      System.err.println("[AuthController] Error authenticating user: " + e.getMessage());
+      return ResponseEntity.status(401)
+          .body(Map.of("error", "Email ou senha inválidos"));
+    }
   }
 }
