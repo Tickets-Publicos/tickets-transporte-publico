@@ -1,6 +1,6 @@
 # 🎫 Sistema de Tickets de Transporte Público
 
-Sistema para reportar e gerenciar problemas de transporte público, desenvolvido com NestJS, Next.js e PostgreSQL.
+Sistema para reportar e gerenciar problemas de transporte público, desenvolvido com Spring Boot (Java), Next.js e PostgreSQL.
 
 ## 📚 Índice
 
@@ -129,17 +129,12 @@ docker exec tickets-api npx prisma migrate dev
 ```bash
 # Desenvolvimento
 pnpm dev              # Inicia todos os apps em modo dev
-pnpm dev:api          # Inicia apenas a API
-pnpm dev:web          # Inicia apenas o Web
 
 # Build
 pnpm build            # Build de todos os apps
-pnpm build:api        # Build apenas da API
-pnpm build:web        # Build apenas do Web
 
 # Testes
 pnpm test             # Roda todos os testes
-pnpm test:api         # Testa apenas a API
 pnpm lint             # Roda linting
 pnpm check-types      # Verifica tipos TypeScript
 
@@ -157,7 +152,7 @@ docker-compose -f docker-compose.prod.yml up -d  # Produção
 ```text
 tickets-transporte-publico/
 ├── apps/
-│   ├── api/          # Backend NestJS
+│   ├── api-java/      # Backend Spring Boot (Java 25)
 │   └── web/          # Frontend Next.js
 ├── packages/         # Shared packages
 ├── docker/           # Dockerfiles
@@ -169,15 +164,30 @@ tickets-transporte-publico/
 
 ### Tecnologias Principais
 
-- **Backend**: NestJS, Prisma, PostgreSQL
+- **Backend**: Spring Boot 3.5.7 (Java 25), PostgreSQL 16, Flyway
 - **Frontend**: Next.js, React, Tailwind CSS, shadcn/ui
 - **Infraestrutura**: Docker Compose, Nginx, Armazenamento Local
 - **CI/CD**: GitHub Actions
 - **Monorepo**: Turborepo, pnpm workspaces
 
-### Diagramas e Documentação
+### 📚 Documentação
 
-A documentação técnica completa, incluindo diagramas UML e design do sistema, está disponível na pasta `wiki/`.
+#### Guias de Desenvolvimento
+
+- **[Setup e Instalação](./docs/setup.md)** - Guia passo a passo: Java 25, Docker, pnpm
+- **[Autenticação](./docs/auth.md)** - Arquitetura híbrida Next.js + Spring Boot  
+- **[Banco de Dados](./docs/database.md)** - Migrations com Flyway, PostgreSQL
+- **[Testes](./docs/tests.md)** - Testes unitários (13 Java + 1 Web) e cobertura
+
+#### Deploy e Produção
+
+- **[Deploy Completo](./docs/DEPLOY.md)** - Guia detalhado de deploy com GitHub Actions
+- **[Produção](./docs/PRODUCTION.md)** - Configuração de produção, Nginx, SSL/TLS
+
+#### Documentação Técnica (LaTeX)
+
+- **[Wiki LaTeX](./wiki/latex/README.tex)** - Documentação acadêmica completa (PDF)
+- **[Build Wiki](./wiki/BUILD.md)** - Como gerar diagramas PlantUML e compilar
 
 ### 🔐 Autenticação Híbrida
 
@@ -185,7 +195,8 @@ O projeto utiliza uma abordagem inovadora de autenticação híbrida:
 
 - **Next.js (Frontend/Proxy)**: Gerencia a sessão do usuário e cookies via **Better Auth**.
 - **Java (Backend)**: Responsável pela validação real das credenciais e persistência no banco de dados.
-- **Fluxo**: O Next.js intercepta o login, valida com o Java via API interna, e se aprovado, cria a sessão. Isso une a segurança do Java com a agilidade do Next.js.
+
+Veja mais em [docs/auth.md](./docs/auth.md).
 
 ---
 
