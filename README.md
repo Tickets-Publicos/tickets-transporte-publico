@@ -170,7 +170,7 @@ tickets-transporte-publico/
 ### Tecnologias Principais
 
 - **Backend**: NestJS, Prisma, PostgreSQL
-- **Frontend**: Next.js 15, React, Tailwind CSS, shadcn/ui
+- **Frontend**: Next.js, React, Tailwind CSS, shadcn/ui
 - **Infraestrutura**: Docker Compose, Nginx, Armazenamento Local
 - **CI/CD**: GitHub Actions
 - **Monorepo**: Turborepo, pnpm workspaces
