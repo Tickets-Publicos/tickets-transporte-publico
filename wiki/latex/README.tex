@@ -694,201 +694,6 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 }{%
     \fbox{\parbox[c][6cm][c]{\textwidth}{\centering Imagem \texttt{class\_diagram.png} não encontrada}}
 }
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1. O Pedestre seleciona que deseja reportar um problema na página principal & 2. O Sistema exibe uma listagem dos pontos e estações e o mapa \\
-\hline
-3. Escolhe a localização através da busca pelo nome ou endereço, ou ainda através do mapa & 4. O Sistema retorna e solicita a confirmação do pedestre para que ele prossiga \\
-\hline
-5. O pedestre verifica as informações do local selecionado e confirma & 6. O Sistema exibe uma lista de categorias problemas e oferece outro passo de confirmação para o pedestre \\
-\hline
-7. O pedestre confirma a seleção da categoria e local & 8. O Sistema solicita informações sobre o problema e oferece dicas para que o reporte tenha boa qualidade \\
-\hline
-9. O Pedestre registra um título para o problema e uma descrição que dê mais detalhes sobre a natureza dele e ao checar as informações envia o reporte & 10. O Sistema informa o envio do reporte e solicita se o pedestre deseja criar um novo reporte ou visualizar o reporte publicado. \\
-\hline
-\end{longtable}
-
-\textbf{Fluxo Alternativo – Pedestre não está logado no sistema}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1a. O pedestre seleciona a opção de reportar sem estar logado & 2a. O Sistema redireciona para a tela de login/cadastro (UC004 – Autenticar Usuário). \\
-\hline
-3a. Após login/cadastro concluído & 4a. O Sistema retorna ao ponto em que o fluxo principal estava, permitindo prosseguir do passo 3. \\
-\hline
-\end{longtable}
-
-\textbf{Fluxos de Exceção}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1e. O pedestre seleciona uma localização inexistente ou inválida & 2e. O sistema exibe mensagem de erro e solicita nova seleção de localização. \\
-\hline
-2e. O pedestre não insere título ou descrição & 3e. O sistema informa que os campos são obrigatórios e impede o envio até que sejam preenchidos. \\
-\hline
-3e. O pedestre tenta anexar arquivo em formato não suportado & 4e. O sistema rejeita o upload e informa quais formatos são permitidos. \\
-\hline
-4e. O sistema encontra falha de conexão no envio do reporte & 5e. O sistema notifica falha técnica e oferece a opção de salvar localmente para tentar enviar depois. \\
-\hline
-\end{longtable}
-
-\paragraph{5.1.1.2 Consultar o Mapa de Problemas}
-
-\begin{longtable}{|p{3.5cm}|p{10cm}|}
-\hline
-\textbf{Identificador} & UC002 – Consultar Mapa de Problemas \\
-\hline
-\textbf{Nome} & Consultar Mapa de Problemas \\
-\hline
-\textbf{Atores} & Primário: Pedestre (usuário do sistema). \newline Secundário: Administrador (para análise de ocorrências). \\
-\hline
-\textbf{Sumário} & O pedestre acessa o sistema para visualizar, no mapa, os problemas de acessibilidade reportados em pontos de transporte público. \\
-\hline
-\textbf{Complexidade} & Baixa \\
-\hline
-\textbf{Regras de Negócio} & - RN007: O mapa deve exibir apenas problemas confirmados e devidamente registrados.\newline - RN008: O usuário pode aplicar filtros (categoria, data, status).\newline - RN009: Cada problema deve estar associado a uma localização válida.\newline - RN010: O sistema deve mostrar a data de registro e a situação do problema (pendente, em análise, resolvido).\newline - RN011: Problemas com mais de 1 ano podem ser arquivados, mas ainda disponíveis mediante filtro avançado. \\
-\hline
-\textbf{Pré-condições} & O sistema deve conter reportes cadastrados.\newline O pedestre precisa ter acesso à plataforma (não é obrigatório login apenas para consulta). \\
-\hline
-\textbf{Pós-condição} & O usuário terá acesso visual aos problemas existentes no mapa e poderá selecionar pontos para ver detalhes. \\
-\hline
-\textbf{Pontos de Inclusão} & UC006 – Visualizar Detalhes de Problema (quando o usuário seleciona um ponto específico). \\
-\hline
-\textbf{Pontos de Extensão} & UC001 – Reportar Problema (usuário pode criar um novo reporte a partir do mapa). \\
-\hline
-\end{longtable}
-
-\textbf{Fluxo Principal}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1. O pedestre acessa a opção "Consultar mapa de problemas". & 2. O sistema carrega o mapa com todos os pontos e marcadores de problemas registrados. \\
-\hline
-3. O pedestre pode aplicar filtros (categoria, data, status). & 4. O sistema atualiza o mapa exibindo apenas os problemas que atendem ao filtro. \\
-\hline
-5. O pedestre navega pelo mapa e seleciona um marcador específico. & 6. O sistema exibe informações resumidas do problema e opção de ver detalhes (UC006). \\
-\hline
-\end{longtable}
-
-\textbf{Fluxo Alternativo – Sem problemas cadastrados}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1a. O pedestre acessa o mapa sem que haja reportes cadastrados. & 2a. O sistema exibe mensagem "Nenhum problema cadastrado até o momento" e mostra apenas os pontos sem ocorrências. \\
-\hline
-\end{longtable}
-
-\textbf{Fluxos de Exceção}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1e. O sistema não consegue carregar o mapa (falha na API de mapas ou conexão). & 2e. O sistema exibe mensagem de erro "Não foi possível carregar o mapa. Tente novamente mais tarde". \\
-\hline
-2e. O usuário aplica um filtro inválido ou inexistente. & 3e. O sistema exibe mensagem "Filtro inválido" e mantém a última visualização correta. \\
-\hline
-3e. O marcador selecionado não possui dados válidos (erro no registro). & 4e. O sistema exibe mensagem de inconsistência e oculta o marcador defeituoso. \\
-\hline
-\end{longtable}
-
-\paragraph{5.1.1.3 Atualizar Status de Problema}
-
-\begin{longtable}{|p{3.5cm}|p{10cm}|}
-\hline
-\textbf{Identificador} & UC003 – Atualizar Status de Problema \\
-\hline
-\textbf{Nome} & Atualizar Status de Problema \\
-\hline
-\textbf{Atores} & Primário: Administrador (responsável por um ponto de transporte público). \newline Secundário: Pedestre autor do reporte. \\
-\hline
-\textbf{Sumário} & O administrador acessa o sistema para alterar o status de um problema reportado, e o pedestre autor do reporte deve confirmar a resolução antes do status ser consolidado como "Resolvido". \\
-\hline
-\textbf{Complexidade} & Alta \\
-\hline
-\textbf{Regras de Negócio} & - RN012: Apenas administradores autenticados podem atualizar status.\newline - RN013: O status pode assumir: \textbf{Pendente}, \textbf{Em Análise}, \textbf{Resolvido Provisório}, \textbf{Resolvido Confirmado}, \textbf{Arquivado}.\newline - RN014: Toda atualização deve registrar data, hora e autor da alteração.\newline - RN015: Ao alterar para "Resolvido Provisório", o sistema notifica o pedestre autor para validação.\newline - RN016: O pedestre tem um prazo (ex.: 7 dias) para confirmar a resolução; se não houver resposta, o sistema automaticamente consolida como "Resolvido Confirmado".\newline - RN017: Caso o pedestre rejeite a resolução, o status volta para \textbf{Em Análise}. \\
-\hline
-\textbf{Pré-condições} & O administrador deve estar autenticado.\newline Deve existir pelo menos um problema reportado no ponto administrado.\newline O pedestre autor deve estar vinculado ao reporte. \\
-\hline
-\textbf{Pós-condição} & O status do problema será atualizado no sistema, refletindo tanto a ação do administrador quanto a validação do pedestre. \\
-\hline
-\textbf{Pontos de Inclusão} & UC002 – Consultar Mapa de Problemas (para localizar o problema). \\
-\hline
-\textbf{Pontos de Extensão} & UC006 – Visualizar Detalhes de Problema (para acompanhar histórico e status detalhado). \\
-\hline
-\end{longtable}
-
-\textbf{Fluxo Principal}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1. O administrador acessa a lista/mapa de problemas reportados. & 2. O sistema exibe os problemas associados ao ponto. \\
-\hline
-3. O administrador seleciona um problema específico. & 4. O sistema exibe detalhes do problema e status atual. \\
-\hline
-5. O administrador escolhe a opção de atualizar status para "Resolvido Provisório". & 6. O sistema registra a alteração e envia notificação ao pedestre autor. \\
-\hline
-7. O pedestre recebe a notificação e abre o problema. & 8. O sistema exibe detalhes da resolução e opções de confirmar ou rejeitar. \\
-\hline
-9. O pedestre confirma a resolução. & 10. O sistema altera o status para "Resolvido Confirmado", registra histórico e atualiza o mapa. \\
-\hline
-\end{longtable}
-
-\textbf{Fluxo Alternativo - Pedestre rejeita a resolução}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-9a. O pedestre rejeita a resolução. & 10a. O sistema altera o status de volta para \textbf{Em Análise} e notifica o administrador. \\
-\hline
-\end{longtable}
-
-\textbf{Fluxo Alternativo – Pedestre não responde}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-9b. O pedestre não responde dentro do prazo (ex.: 7 dias). & 10b. O sistema consolida automaticamente o status como \textbf{Resolvido Confirmado} e registra no histórico. \\
-\hline
-\end{longtable}
-
-\textbf{Fluxo de Exceção}
-
-\begin{longtable}{|>{\raggedright\arraybackslash}p{7cm}|>{\raggedright\arraybackslash}p{7cm}|}
-\hline
-\textbf{Ações do Ator} & \textbf{Ações do Sistema} \\
-\hline
-1e. O administrador não está autenticado. & 2e. O sistema bloqueia e redireciona para login. \\
-\hline
-2e. O pedestre não consegue abrir o reporte (erro técnico). & 3e. O sistema exibe mensagem de erro e orienta tentar novamente. \\
-\hline
-3e. O administrador tenta alterar status de problema fora de sua jurisdição. & 4e. O sistema impede a ação e informa falta de permissão. \\
-\hline
-\end{longtable}
-
-\subsection{UML - Diagrama de Classe de Domínio}
-
-\begin{figure}[H]
-\centering
-\IfFileExists{../imgs/class_diagram.png}{%
-    \includegraphics[width=\textwidth]{../imgs/class_diagram.png}
-}{%
-    \fbox{\parbox[c][6cm][c]{\textwidth}{\centering Imagem \texttt{class\_diagram.png} não encontrada}}
-}
 \caption{Diagrama de Classes}
 \end{figure}
 
@@ -934,8 +739,8 @@ O frontend utiliza o Sonner (Toaster) para exibir mensagens amigáveis, capturan
 
 \textbf{Backend:}
 \begin{itemize}
-    \item Node.js com framework NestJS
-    \item PostgreSQL com extensão PostGIS para dados geoespaciais
+    \item Java com framework Spring Boot
+    \item PostgreSQL para dados
     \item Docker para containerização
 \end{itemize}
 
@@ -1036,6 +841,75 @@ A implementação da arquitetura híbrida foi concluída com sucesso, integrando
     \item \textbf{Integração Next.js + Java:} Proxy inteligente funcionando corretamente para login e registro.
     \item \textbf{Autenticação Social:} Sincronização de usuários Google com o banco de dados PostgreSQL.
     \item \textbf{UX:} Feedback visual claro para erros de autenticação.
+\end{itemize}
+
+\subsection{Testes Automatizados}
+\label{subsec:testes}
+
+A garantia de qualidade do sistema é assegurada através de uma cobertura abrangente de testes automatizados, divididos entre o backend Java (Spring Boot) e o frontend (Next.js). O projeto conta com 14 arquivos de teste, totalizando mais de 50 casos de teste individuais.
+
+\subsubsection{Testes do Backend (Java/Spring Boot)}
+
+O backend possui 13 classes de teste organizadas em duas categorias principais: testes de controladores (controllers) e testes de serviços (services). Todos os testes utilizam JUnit 5 e Mockito para isolamento de dependências.
+
+\paragraph{Testes de Controladores}
+
+\begin{itemize}
+    \item \textbf{AuthControllerTest:} Valida os endpoints de autenticação, incluindo login, registro, sincronização de usuários OAuth e recuperação de dados do usuário autenticado. Testa cenários de sucesso e falha, verificação de headers de autenticação e tratamento de erros.
+    \item \textbf{CategoryControllerTest:} Testa as operações CRUD de categorias de problemas de acessibilidade, incluindo listagem, criação, atualização e remoção.
+    \item \textbf{LocationControllerTest:} Valida o gerenciamento de localizações (pontos de transporte público), incluindo operações de consulta geoespacial e validação de dados.
+    \item \textbf{ReportControllerTest:} Testa o ciclo completo de reportes de problemas, desde a criação com upload de imagens até a consulta e filtragem por localização e status.
+    \item \textbf{StatsControllerTest:} Valida a geração de estatísticas e métricas do sistema, incluindo contadores de problemas por categoria e localização.
+    \item \textbf{UserControllerTest:} Testa o gerenciamento de usuários, incluindo consultas, atualizações de perfil e controle de permissões.
+\end{itemize}
+
+\paragraph{Testes de Serviços}
+
+\begin{itemize}
+    \item \textbf{CategoryServiceTest:} Valida a lógica de negócio para categorias, incluindo regras de validação e persistência.
+    \item \textbf{LocationServiceTest:} Testa a lógica de manipulação de dados geoespaciais, consultas por proximidade e validação de coordenadas.
+    \item \textbf{PasswordServiceTest:} Valida a geração de hashes BCrypt, verificação de senhas e políticas de segurança de senhas.
+    \item \textbf{ReportServiceTest:} Testa a lógica de negócio complexa de reportes, incluindo validações, transições de estado e notificações.
+    \item \textbf{StatsServiceTest:} Valida os cálculos de estatísticas agregadas e geração de relatórios.
+    \item \textbf{UserServiceEmailPasswordTest:} Testa especificamente o fluxo de autenticação com email e senha, incluindo validação de credenciais e criação de tokens JWT.
+    \item \textbf{UserServiceTest:} Valida operações gerais de usuário, incluindo criação, atualização e sincronização com provedores OAuth.
+\end{itemize}
+
+\subsubsection{Testes do Frontend (Next.js)}
+
+O frontend possui um arquivo de teste inicial que valida componentes React:
+
+\begin{itemize}
+    \item \textbf{Header.test.tsx:} Testa a renderização e comportamento do componente de cabeçalho da aplicação, incluindo navegação, exibição de menu e estado de autenticação do usuário.
+\end{itemize}
+
+\subsubsection{Cobertura e Execução}
+
+Os testes são executados automaticamente no pipeline de CI/CD (GitHub Actions) a cada Pull Request e push na branch principal. O backend utiliza JaCoCo para geração de relatórios de cobertura de código, enquanto o frontend utiliza Jest com suporte a React Testing Library.
+
+\paragraph{Comandos de Execução:}
+
+\begin{verbatim}
+# Executar todos os testes do backend
+cd apps/api-java
+./mvnw test
+
+# Executar testes com relatório de cobertura
+./mvnw verify
+
+# Executar testes do frontend
+cd apps/web
+pnpm test
+\end{verbatim}
+
+\paragraph{Métricas de Qualidade:}
+
+\begin{itemize}
+    \item \textbf{Total de arquivos de teste:} 14 (13 Java + 1 TypeScript)
+    \item \textbf{Casos de teste estimados:} \textgreater50
+    \item \textbf{Frameworks utilizados:} JUnit 5, Mockito, MockMvc (Java); Jest, React Testing Library (Frontend)
+    \item \textbf{Integração CI/CD:} Execução automática em todos os PRs
+    \item \textbf{Cobertura de código:} Relatórios gerados via JaCoCo para backend
 \end{itemize}
 
 \section{Conclusão e Trabalhos Futuros}
