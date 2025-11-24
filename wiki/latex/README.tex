@@ -702,12 +702,45 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 \section{Descrição da Arquitetura e Ferramentas Utilizadas}
 \label{sec:arquitetura}
 
+\subsection{Fluxo de Autenticação}
+
+O sistema utiliza uma abordagem híbrida onde o Better Auth (no Next.js) gerencia a sessão e os cookies, mas a validação de credenciais e persistência de usuários é delegada ou sincronizada com o Backend Java.
+
+\subsubsection{Autenticação por Email e Senha}
+Neste fluxo, o Next.js atua como um proxy inteligente, delegando a validação para o Java.
+
+\textbf{Fluxo de Login:}
+\begin{itemize}
+    \item \textbf{Frontend:} Usuário preenche email e senha e chama \texttt{signIn.email}.
+    \item \textbf{Next.js Server (Hook before.signInEmail):} Intercepta a requisição e envia as credenciais para o Java (\texttt{/auth/login}).
+    \item \textbf{Validação:} Se o Java aprovar, o hook substitui a senha por um "token mágico" (\texttt{\_\_VERIFIED\_BY\_JAVA\_\_}). O Better Auth então cria a sessão.
+\end{itemize}
+
+\textbf{Fluxo de Registro:}
+\begin{itemize}
+    \item \textbf{Frontend:} Chama \texttt{signUp.email}.
+    \item \textbf{Next.js Server (Hook before.signUpEmail):} Envia os dados para o Java (\texttt{/auth/register}) para criar o usuário no PostgreSQL.
+\end{itemize}
+
+\subsubsection{Autenticação Social (OAuth)}
+O Better Auth gerencia o handshake com o provedor (Google, etc.) e sincronizamos com o Java.
+
+\textbf{Fluxo:}
+\begin{itemize}
+    \item \textbf{Frontend:} Usuário faz login social.
+    \item \textbf{Next.js Server (Callback onSignIn):} Após sucesso no Better Auth, chamamos o Java (\texttt{/auth/sync-user}) para garantir que o usuário exista no banco e obter ID/Role corretos.
+    \item \textbf{Sincronização:} A sessão local é atualizada com os dados do Java.
+\end{itemize}
+
+\subsubsection{Tratamento de Erros}
+O frontend utiliza o Sonner (Toaster) para exibir mensagens amigáveis, capturando erros retornados pelos hooks do servidor.
+
 \subsection{Stack Tecnológico}
 
 \textbf{Backend:}
 \begin{itemize}
-    \item Node.js com framework NestJS
-    \item PostgreSQL com extensão PostGIS para dados geoespaciais
+    \item Java com framework Spring Boot
+    \item PostgreSQL para dados
     \item Docker para containerização
 \end{itemize}
 
@@ -719,8 +752,8 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 
 \textbf{Infraestrutura:}
 \begin{itemize}
-    \item Kubernetes para orquestração
-    \item AWS S3 ou MinIO para armazenamento de objetos
+    \item Docker Compose para orquestração
+    \item Armazenamento em disco local no servidor para arquivos e objetos
     \item GitHub Actions para CI/CD
 \end{itemize}
 
@@ -802,13 +835,81 @@ Exibe todos os reports do sistema, permitindo visualizar detalhes e acompanhar p
 \section{Resultados}
 \label{sec:resultados}
 
-\textit{[Esta seção será preenchida após a implementação, incluindo:}
+A implementação da arquitetura híbrida foi concluída com sucesso, integrando a agilidade do Next.js com a robustez do Java. O sistema de autenticação suporta login via email/senha e social, garantindo a segurança e a consistência dos dados entre as camadas. O tratamento de erros foi aprimorado com o uso do Sonner, proporcionando uma melhor experiência ao usuário.
+
 \begin{itemize}
-    \item \textit{Métricas de desempenho do sistema}
-    \item \textit{Estatísticas de uso e engajamento}
-    \item \textit{Casos de sucesso e impactos mensuráveis}
-    \item \textit{Feedback dos usuários e gestores}
-    \item \textit{Lições aprendidas]}
+    \item \textbf{Integração Next.js + Java:} Proxy inteligente funcionando corretamente para login e registro.
+    \item \textbf{Autenticação Social:} Sincronização de usuários Google com o banco de dados PostgreSQL.
+    \item \textbf{UX:} Feedback visual claro para erros de autenticação.
+\end{itemize}
+
+\subsection{Testes Automatizados}
+\label{subsec:testes}
+
+A garantia de qualidade do sistema é assegurada através de uma cobertura abrangente de testes automatizados, divididos entre o backend Java (Spring Boot) e o frontend (Next.js). O projeto conta com 14 arquivos de teste, totalizando mais de 50 casos de teste individuais.
+
+\subsubsection{Testes do Backend (Java/Spring Boot)}
+
+O backend possui 13 classes de teste organizadas em duas categorias principais: testes de controladores (controllers) e testes de serviços (services). Todos os testes utilizam JUnit 5 e Mockito para isolamento de dependências.
+
+\paragraph{Testes de Controladores}
+
+\begin{itemize}
+    \item \textbf{AuthControllerTest:} Valida os endpoints de autenticação, incluindo login, registro, sincronização de usuários OAuth e recuperação de dados do usuário autenticado. Testa cenários de sucesso e falha, verificação de headers de autenticação e tratamento de erros.
+    \item \textbf{CategoryControllerTest:} Testa as operações CRUD de categorias de problemas de acessibilidade, incluindo listagem, criação, atualização e remoção.
+    \item \textbf{LocationControllerTest:} Valida o gerenciamento de localizações (pontos de transporte público), incluindo operações de consulta geoespacial e validação de dados.
+    \item \textbf{ReportControllerTest:} Testa o ciclo completo de reportes de problemas, desde a criação com upload de imagens até a consulta e filtragem por localização e status.
+    \item \textbf{StatsControllerTest:} Valida a geração de estatísticas e métricas do sistema, incluindo contadores de problemas por categoria e localização.
+    \item \textbf{UserControllerTest:} Testa o gerenciamento de usuários, incluindo consultas, atualizações de perfil e controle de permissões.
+\end{itemize}
+
+\paragraph{Testes de Serviços}
+
+\begin{itemize}
+    \item \textbf{CategoryServiceTest:} Valida a lógica de negócio para categorias, incluindo regras de validação e persistência.
+    \item \textbf{LocationServiceTest:} Testa a lógica de manipulação de dados geoespaciais, consultas por proximidade e validação de coordenadas.
+    \item \textbf{PasswordServiceTest:} Valida a geração de hashes BCrypt, verificação de senhas e políticas de segurança de senhas.
+    \item \textbf{ReportServiceTest:} Testa a lógica de negócio complexa de reportes, incluindo validações, transições de estado e notificações.
+    \item \textbf{StatsServiceTest:} Valida os cálculos de estatísticas agregadas e geração de relatórios.
+    \item \textbf{UserServiceEmailPasswordTest:} Testa especificamente o fluxo de autenticação com email e senha, incluindo validação de credenciais e criação de tokens JWT.
+    \item \textbf{UserServiceTest:} Valida operações gerais de usuário, incluindo criação, atualização e sincronização com provedores OAuth.
+\end{itemize}
+
+\subsubsection{Testes do Frontend (Next.js)}
+
+O frontend possui um arquivo de teste inicial que valida componentes React:
+
+\begin{itemize}
+    \item \textbf{Header.test.tsx:} Testa a renderização e comportamento do componente de cabeçalho da aplicação, incluindo navegação, exibição de menu e estado de autenticação do usuário.
+\end{itemize}
+
+\subsubsection{Cobertura e Execução}
+
+Os testes são executados automaticamente no pipeline de CI/CD (GitHub Actions) a cada Pull Request e push na branch principal. O backend utiliza JaCoCo para geração de relatórios de cobertura de código, enquanto o frontend utiliza Jest com suporte a React Testing Library.
+
+\paragraph{Comandos de Execução:}
+
+\begin{verbatim}
+# Executar todos os testes do backend
+cd apps/api-java
+./mvnw test
+
+# Executar testes com relatório de cobertura
+./mvnw verify
+
+# Executar testes do frontend
+cd apps/web
+pnpm test
+\end{verbatim}
+
+\paragraph{Métricas de Qualidade:}
+
+\begin{itemize}
+    \item \textbf{Total de arquivos de teste:} 14 (13 Java + 1 TypeScript)
+    \item \textbf{Casos de teste estimados:} \textgreater50
+    \item \textbf{Frameworks utilizados:} JUnit 5, Mockito, MockMvc (Java); Jest, React Testing Library (Frontend)
+    \item \textbf{Integração CI/CD:} Execução automática em todos os PRs
+    \item \textbf{Cobertura de código:} Relatórios gerados via JaCoCo para backend
 \end{itemize}
 
 \section{Conclusão e Trabalhos Futuros}
@@ -831,11 +932,11 @@ O projeto visa criar uma solução tecnológica escalável e sustentável para o
 \subsection{Trabalhos Futuros}
 
 \begin{itemize}
-    \item Integração com sistemas de transporte público
-    \item Expansão para detecção de barreiras em ambientes internos
+    \item Integração com IA para análise automática de relatos
+    \item Compatibilidade e otimização para dispositivos móveis
+    \item Tela administrativa para gestão de locais (CRUD: cadastrar, editar, excluir)
+    \item Integração com APIs públicas (SPTrans e afins) para busca automática de locais existentes
     \item Desenvolvimento de rotas acessíveis personalizadas
-    \item Implementação de realidade aumentada para navegação
-    \item Criação de índice de acessibilidade por cidade/bairro
 \end{itemize}
 
 \end{document}

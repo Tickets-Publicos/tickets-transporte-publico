@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="2" failures="0" errors="0" time="6.515">
-  <testsuite name="Header" errors="0" failures="0" skipped="0" timestamp="2025-10-26T00:19:19" time="3.3" tests="2">
-    <testcase classname="Header mostra título e botão Entrar quando usuário não está autenticado" name="Header mostra título e botão Entrar quando usuário não está autenticado" time="0.081">
+<testsuites name="jest tests" tests="2" failures="0" errors="0" time="7.321">
+  <testsuite name="Header" errors="0" failures="0" skipped="0" timestamp="2025-11-21T04:46:54" time="3.752" tests="2">
+    <testcase classname="Header mostra título e botão Entrar quando usuário não está autenticado" name="Header mostra título e botão Entrar quando usuário não está autenticado" time="0.092">
     </testcase>
-    <testcase classname="Header mostra UserMenu quando usuário está autenticado" name="Header mostra UserMenu quando usuário está autenticado" time="0.018">
+    <testcase classname="Header mostra UserMenu quando usuário está autenticado" name="Header mostra UserMenu quando usuário está autenticado" time="0.021">
     </testcase>
   </testsuite>
 </testsuites>

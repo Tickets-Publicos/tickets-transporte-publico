@@ -120,21 +120,14 @@ if ($schemaContent.Length -lt 100) {
   exit 1
 }
 
-Write-Host "✔ JPA schema exported successfully" -ForegroundColor Green
+Write-Host "[SUCCESS] JPA schema exported successfully" -ForegroundColor Green
 
-# Now create the migration SQL
-Write-Host "Creating migration SQL: $(Split-Path -Leaf $targetSql)..." -ForegroundColor Cyan
-
-@"
+$header = @"
 -- Flyway baseline generated from JPA metadata
 -- Timestamp: $(Get-Date -Format o)
 
 -- Ensure required extensions exist
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-"@ | Out-File -FilePath $targetSql -Encoding UTF8
-
-# Append the JPA schema
-Get-Content $createSchemaPath | Add-Content -Path $targetSql -Encoding UTF8
-
-Write-Host "✔ Migration generated: $targetSql" -ForegroundColor Green
+"@
+Set-Content -Path $targetSql -Value $header -Encoding UTF8
+Add-Content -Path $targetSql -Value (Get-Content $createSchemaPath -Raw) -Encoding UTF8
