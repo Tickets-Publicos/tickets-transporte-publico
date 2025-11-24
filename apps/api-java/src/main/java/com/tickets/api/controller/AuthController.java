@@ -5,7 +5,6 @@ import com.tickets.api.dto.LoginRequest;
 import com.tickets.api.dto.RegisterRequest;
 import com.tickets.api.dto.UserSyncRequest;
 import com.tickets.api.dto.user.UserResponseDto;
-// import com.tickets.api.service.JwtService;
 import com.tickets.api.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
